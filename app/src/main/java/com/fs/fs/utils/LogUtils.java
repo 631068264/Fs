@@ -21,7 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 /**
  * @Annotation Log工具
  */
-public class Logger {
+public class LogUtils {
     private static final int DEBUG = 0;
     private static final int ERROR = 2;
     private static final int INFO = 4;
@@ -40,8 +40,8 @@ public class Logger {
         //String threadName = Thread.currentThread().getName();
         String tag = "Logger";
         for (int i = 1; i < trace.length; i++) {
-            if (trace[i - 1].getClassName().equals(Logger.class.getName())
-                    && !trace[i].getClassName().equals(Logger.class.getName())) {
+            if (trace[i - 1].getClassName().equals(LogUtils.class.getName())
+                    && !trace[i].getClassName().equals(LogUtils.class.getName())) {
                 tag = trace[i].getClassName().replaceAll("^.*\\.", "");
                 break;
             }

@@ -36,6 +36,8 @@ public class DateUtils {
         return new SimpleDateFormat(pattern, Locale.getDefault()).format(new Date(millis));
     }
 
+
+
     public static String getSpan(long millis) {
         int[] TimeUnit = {DAY, HOUR, MIN, SEC};
         List<Long> r = new ArrayList<>();

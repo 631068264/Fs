@@ -1,21 +1,7 @@
 package com.fs.fs;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.SystemClock;
-
-import com.fs.fs.bean.AppInfo;
-import com.fs.fs.utils.DateUtils;
-import com.fs.fs.utils.Logger;
-import com.jaredrummler.android.processes.AndroidProcesses;
-import com.jaredrummler.android.processes.models.AndroidAppProcess;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -23,73 +9,45 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getRunningAppInfo(MainActivity.this);
-        Logger.d("__________________end_____________");
-        getInstallAppInfo();
+        // 应用监控
+//        AppInfoService appInfoService = new AppInfoService(MainActivity.this);
+//        appInfoService.getRunningAppInfo();
+//        Logger.d("__________________end_____________");
+//        appInfoService.getInstallAppInfo();
+
+//        new LocationService(MainActivity.this).interval(new LocationService.LocateListener() {
+//            @Override
+//            public void onLocateSucceed(AMapLocation aMapLocation) {
+//                aMapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
+//                double latitude = aMapLocation.getLatitude();//获取纬度
+//                double longitude = aMapLocation.getLongitude();//获取经度
+//                aMapLocation.getAccuracy();//获取精度信息
+//                aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
+//                aMapLocation.getCountry();//国家信息
+//                aMapLocation.getProvince();//省信息
+//                String city = aMapLocation.getCity();//城市信息
+//                String district = aMapLocation.getDistrict();//城区信息
+//                aMapLocation.getStreet();//街道信息
+//                aMapLocation.getStreetNum();//街道门牌号信息
+//                aMapLocation.getCityCode();//城市编码
+//                aMapLocation.getAdCode();//地区编码
+//                aMapLocation.getAoiName();//获取当前定位点的AOI信息
+//                aMapLocation.getBuildingId();//获取当前室内定位的建筑物Id
+//                aMapLocation.getFloor();//获取当前室内定位的楼层
+//                aMapLocation.getGpsAccuracyStatus();//获取GPS的当前状态
+//                //获取定位时间
+//                DateUtils.millis2String(aMapLocation.getTime());
+//
+//                LogUtils.d("%s:%s %s %s", latitude, longitude, city, district);
+//            }
+//
+//            @Override
+//            public void onLocateFail(int errorCode, String errorInfo) {
+//
+//            }
+//        });
+
     }
 
-
-    private List<AppInfo> getInstallAppInfo() {
-        List<AppInfo> appInfos = new ArrayList<>();
-        List<PackageInfo> installedPackages = getPackageManager().getInstalledPackages(0);
-        for (PackageInfo packageInfo : installedPackages) {
-            ApplicationInfo applicationInfo = packageInfo.applicationInfo;
-            //用户程序
-            if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-                AppInfo appInfo = new AppInfo();
-                // 获取到程序的包名
-                appInfo.packageName = packageInfo.packageName;
-                // 获取到版本号
-                appInfo.versionName = packageInfo.versionName;
-                // 获取程序名
-                appInfo.appName = applicationInfo.loadLabel(getPackageManager()).toString();
-                // 获取到程序图标
-                appInfo.icon = applicationInfo.loadIcon(getPackageManager());
-                appInfo.versionCode = packageInfo.versionCode;
-                // 最近安装时间
-                appInfo.installTime = DateUtils.millis2String(packageInfo.lastUpdateTime);
-                appInfos.add(appInfo);
-
-                Logger.d("%s:%s:%s", appInfo.appName, appInfo.packageName, appInfo.installTime);
-            }
-        }
-        return appInfos;
-    }
-
-    private List<AppInfo> getRunningAppInfo(Context context) {
-        List<AppInfo> runningAppInfos = new ArrayList<>();
-        PackageManager pm = context.getPackageManager();
-
-        List<AndroidAppProcess> processes = AndroidProcesses.getRunningAppProcesses();
-        try {
-            for (AndroidAppProcess process : processes) {
-
-                ApplicationInfo applicationInfo = process.getPackageInfo(context, 0).applicationInfo;
-                if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-                    AppInfo appInfo = new AppInfo();
-                    // 获取到程序的包名
-                    appInfo.packageName = applicationInfo.packageName;
-                    // 获取程序名
-                    appInfo.appName = applicationInfo.loadLabel(pm).toString();
-                    // 获取到程序图标
-                    appInfo.icon = applicationInfo.loadIcon(pm);
-                    // 最近一次开机 程序运行时间
-                    long bootTime = System.currentTimeMillis() - SystemClock.elapsedRealtime();
-                    long startTime = bootTime + (10 * process.stat().starttime());
-                    long elapsedTime = System.currentTimeMillis() - startTime;
-                    appInfo.runningTime = DateUtils.getSpan(elapsedTime);
-                    //判断前台应用
-                    appInfo.isForeground = process.foreground;
-                    runningAppInfos.add(appInfo);
-
-                    Logger.d("%s:%b:%s", appInfo.appName, appInfo.isForeground, appInfo.runningTime);
-                }
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            return runningAppInfos;
-        }
-    }
 
 }
