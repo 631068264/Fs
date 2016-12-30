@@ -32,7 +32,7 @@ public class SharePreferencesUtils {
     }
 
 
-    public static synchronized SharePreferencesUtils getIntance(Context context) {
+    public static synchronized SharePreferencesUtils getInstance(Context context) {
         if (mSharePreferencesUtils == null) {
             mSharePreferencesUtils = new SharePreferencesUtils(context);
         }

@@ -30,7 +30,7 @@ public class PhoneService {
 
     public PhoneService(Context context) {
         this.mContext = context;
-        this.mSharePreferences = SharePreferencesUtils.getIntance(context);
+        this.mSharePreferences = SharePreferencesUtils.getInstance(context);
     }
 
     public interface SMSListener {
