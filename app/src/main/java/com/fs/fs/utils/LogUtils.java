@@ -22,9 +22,6 @@ import javax.xml.transform.stream.StreamSource;
  * @Annotation Log工具
  */
 public class LogUtils {
-    private static final int DEBUG = 0;
-    private static final int ERROR = 2;
-    private static final int INFO = 4;
 
 
     enum LogLevel {
@@ -49,21 +46,27 @@ public class LogUtils {
         return tag;
     }
 
-    //Logger.d("hello %s %d", "world", 5);
+    /**
+     * LogUtils.d("hello %s %d", "world", 5);
+     * LogUtils.d("Hello world")
+     *
+     * @param message
+     * @param args
+     */
     public static void d(String message, Object... args) {
-        log(DEBUG, message, args);
+        log(Constant.DEBUG, message, args);
     }
 
     public static void e(String message, Object... args) {
-        log(ERROR, message, args);
+        log(Constant.ERROR, message, args);
     }
 
     public static void e(Throwable throwable) {
-        log(ERROR, Log.getStackTraceString(throwable));
+        log(Constant.ERROR, Log.getStackTraceString(throwable));
     }
 
     public static void i(String message, Object... args) {
-        log(INFO, message, args);
+        log(Constant.INFO, message, args);
     }
 
     public static void json(String json) {
@@ -114,14 +117,14 @@ public class LogUtils {
             String tag = getTag();
             String message = getMessage(msg, args);
             switch (logType) {
-                case DEBUG:
+                case Constant.DEBUG:
                     Log.d(tag, message);
                     break;
-                case ERROR:
+                case Constant.ERROR:
                 default:
                     Log.e(tag, message);
                     break;
-                case INFO:
+                case Constant.INFO:
                     Log.i(tag, message);
                     break;
             }
