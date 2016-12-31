@@ -10,9 +10,8 @@ public class AppInfo {
     public String appName = "";
     public String packageName = "";
     public String versionName = "";
-    public int versionCode = 0;
-    public Drawable icon = null;
-    public String installTime;
-    public String runningTime;
+    public Drawable icon;
+    public String installTime = "";
+    public String runningTime = "";
     public boolean isForeground;
 }

@@ -3,6 +3,12 @@ package com.fs.fs;
 import android.app.Activity;
 import android.os.Bundle;
 
+import com.fs.fs.api.PhoneService;
+import com.fs.fs.bean.PhoneInfo;
+import com.fs.fs.bean.SMSInfo;
+
+import java.util.List;
+
 public class MainActivity extends Activity {
 
     @Override
@@ -48,19 +54,17 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
-//        new PhoneService(MainActivity.this).getSMS(new PhoneService.SMSListener() {
-//            @Override
-//            public void onGetAllSMS(List<SMSInfo> SMSInfo) {
-//
-//            }
-//
-//            @Override
-//            public void onReceive(SMSInfo msgInfo) {
-//                LogUtils.d(msgInfo.toString());
-//            }
-//
-//
-//        });
+        new PhoneService(MainActivity.this).getCalls(new PhoneService.CallListener() {
+            @Override
+            public void onGetAllCall(List<PhoneInfo> callInfo) {
+
+            }
+
+            @Override
+            public void onReceive(SMSInfo msgInfo) {
+
+            }
+        });
     }
 
 

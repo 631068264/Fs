@@ -5,13 +5,13 @@ package com.fs.fs.bean;
  */
 
 public class SMSInfo {
-    public String content;
-    public String phoneNumber;
-    public String time;
-    public String person;
+    public String content = "";
+    public String phoneNumber = "";
+    public String time = "";
+    public String name = "";
 
     @Override
     public String toString() {
-        return String.format("%s:%s:%s:%s", content, phoneNumber, time, person);
+        return String.format("%s:%s:%s:%s", content, phoneNumber, time, name);
     }
 }

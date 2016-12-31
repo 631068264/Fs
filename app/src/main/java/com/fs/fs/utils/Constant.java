@@ -32,6 +32,6 @@ public class Constant {
     public static final String SHARE_FILE_NAME = "SHARE_DATA";
 
     public static final class SHARE_KEYS {
-        public static final String SMS_READ = "sms_read";
+        public static final String SMS_HAS_READ = "sms_read";
     }
 }

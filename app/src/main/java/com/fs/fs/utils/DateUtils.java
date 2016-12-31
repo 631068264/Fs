@@ -26,6 +26,9 @@ public class DateUtils {
 
 
     public static String getSpan(long millis) {
+        if (millis == 0) {
+            return String.format(Constant.SPAN_SEC, millis);
+        }
         int[] TimeUnit = {Constant.DAY, Constant.HOUR, Constant.MIN, Constant.SEC};
         List<Long> r = new ArrayList<>();
         for (int time : TimeUnit) {

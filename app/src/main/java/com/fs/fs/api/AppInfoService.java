@@ -44,7 +44,6 @@ public class AppInfoService {
                 appInfo.appName = applicationInfo.loadLabel(mPackageManager).toString();
                 // 获取到程序图标
                 appInfo.icon = applicationInfo.loadIcon(mPackageManager);
-                appInfo.versionCode = packageInfo.versionCode;
                 // 最近安装时间
                 appInfo.installTime = DateUtils.millis2String(packageInfo.lastUpdateTime);
                 appInfos.add(appInfo);

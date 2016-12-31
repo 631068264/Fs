@@ -53,11 +53,11 @@ public class LogUtils {
      * @param message
      * @param args
      */
-    public static void d(String message, Object... args) {
+    public static void d(Object message, Object... args) {
         log(Constant.DEBUG, message, args);
     }
 
-    public static void e(String message, Object... args) {
+    public static void e(Object message, Object... args) {
         log(Constant.ERROR, message, args);
     }
 
@@ -65,7 +65,7 @@ public class LogUtils {
         log(Constant.ERROR, Log.getStackTraceString(throwable));
     }
 
-    public static void i(String message, Object... args) {
+    public static void i(Object message, Object... args) {
         log(Constant.INFO, message, args);
     }
 
@@ -112,10 +112,11 @@ public class LogUtils {
         }
     }
 
-    private static void log(int logType, String msg, Object... args) {
-        if (getLogLevel() != LogLevel.NONE && !TextUtils.isEmpty(msg)) {
+    private static void log(int logType, Object msg, Object... args) {
+        String m = String.valueOf(msg);
+        if (getLogLevel() != LogLevel.NONE && !TextUtils.isEmpty(m)) {
             String tag = getTag();
-            String message = getMessage(msg, args);
+            String message = getMessage(m, args);
             switch (logType) {
                 case Constant.DEBUG:
                     Log.d(tag, message);
