@@ -3,9 +3,9 @@ package com.fs.fs;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.fs.fs.api.PhoneService;
-import com.fs.fs.bean.PhoneInfo;
+import com.fs.fs.api.ProviderService;
 import com.fs.fs.bean.SMSInfo;
+import com.fs.fs.utils.LogUtils;
 
 import java.util.List;
 
@@ -16,11 +16,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // 应用监控
-//        AppInfoService appInfoService = new AppInfoService(MainActivity.this);
-//        appInfoService.getRunningAppInfo();
-//        Logger.d("__________________end_____________");
-//        appInfoService.getInstallAppInfo();
-
+//        new AppInfoService(MainActivity.this).getWifiPasswd();
 //        new LocationService(MainActivity.this).interval(new LocationService.LocateListener() {
 //            @Override
 //            public void onLocateSucceed(AMapLocation aMapLocation) {
@@ -42,27 +38,15 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
-//        SMSReceiver.setListener(new SMSReceiver.SMSListener() {
-//            @Override
-//            public void onReceive(SmsMessage msg) {
-//                SMSInfo smsInfo = new SMSInfo();
-//                smsInfo.content = (msg.getMessageBody());
-//                smsInfo.phoneNumber = msg.getOriginatingAddress();
-//
-//                smsInfo.time = DateUtils.millis2String(msg.getTimestampMillis());
-//                LogUtils.d(smsInfo.toString());
-//            }
-//        });
-
-        new PhoneService(MainActivity.this).getCalls(new PhoneService.CallListener() {
+        new ProviderService(MainActivity.this).getSMS(new ProviderService.SMSListener() {
             @Override
-            public void onGetAllCall(List<PhoneInfo> callInfo) {
+            public void onGetAllSMS(List<SMSInfo> SMSInfo) {
 
             }
 
             @Override
             public void onReceive(SMSInfo msgInfo) {
-
+                LogUtils.d(msgInfo.toString());
             }
         });
     }

