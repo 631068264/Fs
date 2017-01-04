@@ -2,7 +2,7 @@ package com.fs.fs.api;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.PixelFormat;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -10,10 +10,10 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
-import android.os.Environment;
 
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FileUtils;
+import com.fs.fs.utils.LogUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -59,15 +59,15 @@ public class CameraService {
     private void takePhoto_low(int cameraId) throws IOException {
         final Camera mCamera = Camera.open(cameraId);
         mCamera.setPreviewTexture(new SurfaceTexture(10));
-//        SurfaceView surfaceView = new SurfaceView(mContext);
-//        mCamera.setPreviewDisplay(surfaceView.getHolder());
-
         Camera.Parameters params = mCamera.getParameters();
         params.setJpegQuality(70);
-        params.setPictureFormat(PixelFormat.JPEG);
+//        params.setPreviewSize(640, 480);
+        params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        params.setPictureFormat(ImageFormat.JPEG);
         Size size = getOptimalSize(params.getSupportedPictureSizes());
         params.setPictureSize(size.width, size.height);
         mCamera.setParameters(params);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             mCamera.enableShutterSound(false);
         }
@@ -79,7 +79,8 @@ public class CameraService {
                 fileName = String.format("%s.%s", fileName, "jpg");
                 FileOutputStream out = null;
                 try {
-                    String path = FileUtils.getExternalFullPath(mContext, fileName, Environment.DIRECTORY_DCIM);
+                    String path = FileUtils.getExternalFullPath(mContext, fileName);
+                    LogUtils.d(path);
                     out = new FileOutputStream(path);
                     out.write(data);
                     // TODO:上传

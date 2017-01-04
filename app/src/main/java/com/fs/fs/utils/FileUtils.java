@@ -19,11 +19,7 @@ public class FileUtils {
     }
 
     public static String getExternalFullPath(Context context, String fileName) {
-        File dir = context.getExternalFilesDir(null);
-        if (dir == null) {
-            return getFullPath(context, fileName);
-        }
-        return dir.getAbsolutePath() + File.separator + fileName;
+        return getExternalFullPath(context, fileName, null);
     }
 
     public static String getFullPath(Context context, String fileName) {
