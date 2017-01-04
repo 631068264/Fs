@@ -22,10 +22,14 @@
     <!--读取通信信息的权限-->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-
+    <!--Call monitor-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--<uses-feature android:name="android.hardware.camera" />-->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -59,6 +63,18 @@
                 <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".receivers.MediaReceiver">
+            <intent-filter android:priority="2147483647">
+                <action android:name="android.hardware.action.NEW_PICTURE" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter android:priority="2147483647">
+                <action android:name="android.hardware.action.NEW_VIDEO" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </receiver>
+
 
     </application>
 

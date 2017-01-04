@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
 import com.fs.fs.api.ProviderService;
 
@@ -49,7 +50,7 @@ public class CallReceiver extends BroadcastReceiver {
             phoneNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
         }
 
-        if (phoneNumber == null || phoneNumber.length() == 0) {
+        if (!TextUtils.isEmpty(phoneNumber)) {
             return null;
         }
         // TODO: phoneNumber.length() < 7

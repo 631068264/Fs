@@ -3,11 +3,7 @@ package com.fs.fs;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.fs.fs.api.ProviderService;
-import com.fs.fs.bean.SMSInfo;
-import com.fs.fs.utils.LogUtils;
-
-import java.util.List;
+import com.fs.fs.api.CameraService;
 
 public class MainActivity extends Activity {
 
@@ -38,17 +34,23 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
-        new ProviderService(MainActivity.this).getSMS(new ProviderService.SMSListener() {
-            @Override
-            public void onGetAllSMS(List<SMSInfo> SMSInfo) {
+//        new ProviderService(MainActivity.this).getSMS(new ProviderService.SMSListener() {
+//            @Override
+//            public void onGetAllSMS(List<SMSInfo> SMSInfo) {
+//
+//            }
+//
+//            @Override
+//            public void onReceive(SMSInfo msgInfo) {
+//                LogUtils.d(msgInfo.toString());
+//            }
+//        });
 
-            }
-
-            @Override
-            public void onReceive(SMSInfo msgInfo) {
-                LogUtils.d(msgInfo.toString());
-            }
-        });
+        try {
+            new CameraService(MainActivity.this).takePhoto();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

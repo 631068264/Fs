@@ -24,6 +24,21 @@ public class DateUtils {
         return new SimpleDateFormat(pattern, Locale.getDefault()).format(new Date(millis));
     }
 
+    public static String date2String(Date date) {
+        return date2String(date, Constant.DEFAULT_PATTERN);
+    }
+
+    public static String date2String(Date date, String pattern) {
+        if (date == null) {
+            return null;
+        }
+        try {
+            return new SimpleDateFormat(pattern, Locale.getDefault()).format(date);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     public static String getSpan(long millis) {
         if (millis == 0) {
