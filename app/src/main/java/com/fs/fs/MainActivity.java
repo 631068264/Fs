@@ -3,7 +3,7 @@ package com.fs.fs;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.fs.fs.api.CameraService;
+import com.fs.fs.api.ProviderService;
 
 public class MainActivity extends Activity {
 
@@ -46,11 +46,13 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
-        try {
-            new CameraService(MainActivity.this).takePhoto();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            new CameraService(MainActivity.this).takePhoto();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        new ProviderService(MainActivity.this).getPictures();
     }
 
 

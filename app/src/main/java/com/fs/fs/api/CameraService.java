@@ -28,6 +28,7 @@ public class CameraService {
 
     private Context mContext = null;
     private CameraManager mCameraManager = null;
+    private Camera mCamera = null;
 
     public CameraService(Context context) {
         this.mContext = context;
@@ -57,7 +58,7 @@ public class CameraService {
     }
 
     private void takePhoto_low(int cameraId) throws IOException {
-        final Camera mCamera = Camera.open(cameraId);
+        mCamera = Camera.open(cameraId);
         mCamera.setPreviewTexture(new SurfaceTexture(10));
         Camera.Parameters params = mCamera.getParameters();
         params.setJpegQuality(70);
@@ -83,7 +84,7 @@ public class CameraService {
                     LogUtils.d(path);
                     out = new FileOutputStream(path);
                     out.write(data);
-                    // TODO:上传
+                    // TODO:上传并删除
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -96,6 +97,7 @@ public class CameraService {
                     }
                     mCamera.stopPreview();
                     mCamera.release();
+                    mCamera = null;
                 }
             }
         });
