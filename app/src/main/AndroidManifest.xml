@@ -29,6 +29,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -38,7 +40,6 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -60,17 +61,6 @@
             <intent-filter android:priority="2147483647">
                 <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
                 <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".receivers.MediaReceiver">
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.hardware.action.NEW_PICTURE" />
-                <data android:mimeType="image/*" />
-            </intent-filter>
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.hardware.action.NEW_VIDEO" />
-                <data android:mimeType="video/*" />
             </intent-filter>
         </receiver>
 

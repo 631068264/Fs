@@ -3,7 +3,6 @@ package com.fs.fs;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.fs.fs.api.ProviderService;
 
 public class MainActivity extends Activity {
 
@@ -52,8 +51,23 @@ public class MainActivity extends Activity {
 //            e.printStackTrace();
 //        }
 
-        new ProviderService(MainActivity.this).getPictures();
+//        new ProviderService(MainActivity.this).getPictures();
+
+
+//        MediaRecordService service = new MediaRecordService(MainActivity.this);
+//        service.startRecordVideo();
+//        try {
+//            sleep(10 * 1000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        service.stopRecord();
+
+//        new CameraService(MainActivity.this).takePhoto();
+
     }
+
+
 
 
 }

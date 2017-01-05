@@ -26,18 +26,18 @@ public class SharePreferencesUtils {
     private static SharePreferencesUtils mSharePreferencesUtils = null;
 
     @SuppressLint("CommitPrefEdits")
-    private SharePreferencesUtils(Context context) {
+    public SharePreferencesUtils(Context context) {
         mSharedPreferences = context.getApplicationContext().getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
     }
 
 
-    public static synchronized SharePreferencesUtils getInstance(Context context) {
-        if (mSharePreferencesUtils == null) {
-            mSharePreferencesUtils = new SharePreferencesUtils(context);
-        }
-        return mSharePreferencesUtils;
-    }
+//    public static synchronized SharePreferencesUtils getInstance(Context context) {
+//        if (mSharePreferencesUtils == null) {
+//            mSharePreferencesUtils = new SharePreferencesUtils(context);
+//        }
+//        return mSharePreferencesUtils;
+//    }
 
     public void put(String key, Object value) {
         if (value instanceof String) {

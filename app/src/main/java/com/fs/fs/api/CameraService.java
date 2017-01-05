@@ -35,20 +35,29 @@ public class CameraService {
         this.mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
     }
 
-    public void takePhoto() throws Exception {
+    public void takePhoto() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            String cameraId = getCameraId_high();
+            String cameraId = null;
+            try {
+                cameraId = getCameraId_high();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if (cameraId == null) {
-                throw new Exception("You don't have any camera on your phone");
+                return;
             }
             takePhoto_high(cameraId);
         } else {
             int cameraId = getCameraId_low();
             if (cameraId == -1) {
-                throw new Exception("You don't have any camera on your phone");
+                return;
             }
-            takePhoto_low(cameraId);
+            try {
+                takePhoto_low(cameraId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -62,16 +71,12 @@ public class CameraService {
         mCamera.setPreviewTexture(new SurfaceTexture(10));
         Camera.Parameters params = mCamera.getParameters();
         params.setJpegQuality(70);
-//        params.setPreviewSize(640, 480);
         params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
         params.setPictureFormat(ImageFormat.JPEG);
         Size size = getOptimalSize(params.getSupportedPictureSizes());
         params.setPictureSize(size.width, size.height);
         mCamera.setParameters(params);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mCamera.enableShutterSound(false);
-        }
         mCamera.startPreview();
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
@@ -110,7 +115,7 @@ public class CameraService {
      * @param supportedPictureSizes
      * @return
      */
-    private Size getOptimalSize(List<Size> supportedPictureSizes) {
+    public static Size getOptimalSize(List<Size> supportedPictureSizes) {
         Size size = null;
 
         for (Size supportedSize : supportedPictureSizes) {
@@ -143,7 +148,7 @@ public class CameraService {
         return backId;
     }
 
-    private int getCameraId_low() {
+    public static int getCameraId_low() {
         int backIndex = -1;
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int cameraCount = cameraCount = Camera.getNumberOfCameras();

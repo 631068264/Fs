@@ -30,10 +30,10 @@ public class CallReceiver extends BroadcastReceiver {
         int state = telephonyManager.getCallState();
         switch (state) {
             case TelephonyManager.CALL_STATE_OFFHOOK:
-                mCallsListener.onStrart();
+                mCallsListener.onStart();
                 break;
             case TelephonyManager.CALL_STATE_RINGING:
-                mCallsListener.onStrart();
+                mCallsListener.onStart();
                 break;
             case TelephonyManager.CALL_STATE_IDLE:
                 mCallsListener.onFinish();

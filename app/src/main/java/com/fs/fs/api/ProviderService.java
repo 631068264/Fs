@@ -48,7 +48,7 @@ public class ProviderService {
 
     public ProviderService(Context context) {
         this.mContext = context;
-        this.mSharePreferences = SharePreferencesUtils.getInstance(context);
+        this.mSharePreferences = new SharePreferencesUtils(context);
         this.mResolver = mContext.getContentResolver();
     }
 
@@ -61,7 +61,7 @@ public class ProviderService {
     public interface CallsListener {
         void onGetAllCall(List<PhoneInfo> callInfo);
 
-        void onStrart();
+        void onStart();
 
         void onFinish();
 
