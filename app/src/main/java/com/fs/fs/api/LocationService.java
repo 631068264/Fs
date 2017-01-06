@@ -1,12 +1,10 @@
 package com.fs.fs.api;
 
-import android.content.Context;
-
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
-import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationListener;
+import com.fs.fs.App;
 
 /**
  * Created by wyx on 2016/12/29.
@@ -18,11 +16,33 @@ public class LocationService implements AMapLocationListener {
     private static final long TIME_OUT = 20000;
     private static final long INTERVAL = 1000;
 
-    private Context mContext = null;
     // 声明AMapLocationClient类对象
-    public AMapLocationClient mLocationClient = null;
+    private AMapLocationClient mLocationClient = null;
     // AMapLocationClientOption对象用来设置发起定位的模式和相关参数
-    public AMapLocationClientOption mLocationOption = new AMapLocationClientOption();
+    private AMapLocationClientOption mLocationOption = null;
+
+    private LocationService() {
+        //初始化定位
+        mLocationClient = new AMapLocationClient(App.getInstance());
+        //设置定位回调监听
+        mLocationClient.setLocationListener(this);
+        //不会使用GPS和其他传感器，只会使用网络定位（Wi-Fi和基站定位）
+        mLocationOption = new AMapLocationClientOption();
+        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Battery_Saving);
+        //单位是毫秒，默认30000毫秒，建议超时时间不要低于8000毫秒。
+        mLocationOption.setHttpTimeOut(TIME_OUT);
+        //关闭缓存机制
+        mLocationOption.setLocationCacheEnable(false);
+    }
+
+    private static class SingletonHolder {
+        private static final LocationService INSTANCE = new LocationService();
+    }
+
+    public static LocationService getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
 
     public interface LocateListener {
         void onLocateSucceed(AMapLocation aMapLocation);
@@ -32,31 +52,13 @@ public class LocationService implements AMapLocationListener {
 
     private LocateListener mLocateListener;
 
-    public LocationService(Context context) {
-        this.mContext = context;
-    }
-
-    private void init(LocateListener listener) {
-        mLocateListener = listener;
-
-        //初始化定位
-        mLocationClient = new AMapLocationClient(mContext.getApplicationContext());
-        //设置定位回调监听
-        mLocationClient.setLocationListener(this);
-        //不会使用GPS和其他传感器，只会使用网络定位（Wi-Fi和基站定位）
-        mLocationOption.setLocationMode(AMapLocationMode.Battery_Saving);
-        //单位是毫秒，默认30000毫秒，建议超时时间不要低于8000毫秒。
-        mLocationOption.setHttpTimeOut(TIME_OUT);
-        //关闭缓存机制
-        mLocationOption.setLocationCacheEnable(false);
-    }
 
     public void interval(LocateListener listener) {
         interval(INTERVAL, listener);
     }
 
     public void interval(long millis, LocateListener listener) {
-        init(listener);
+        mLocateListener = listener;
         //设置定位间隔,单位毫秒,默认为2000ms，最低1000ms
         if (millis >= INTERVAL) {
             mLocationOption.setInterval(INTERVAL);
@@ -69,7 +71,7 @@ public class LocationService implements AMapLocationListener {
     }
 
     public void once(LocateListener listener) {
-        init(listener);
+        mLocateListener = listener;
         //获取最近3s内精度最高的一次定位结果
         mLocationOption.setOnceLocationLatest(true);
         mLocationClient.setLocationOption(mLocationOption);

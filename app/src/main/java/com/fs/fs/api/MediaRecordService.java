@@ -1,11 +1,10 @@
 package com.fs.fs.api;
 
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.media.AudioManager;
 import android.media.MediaRecorder;
 
+import com.fs.fs.App;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FileUtils;
 
@@ -19,15 +18,23 @@ import java.util.Date;
  */
 
 public class MediaRecordService {
-    private Context mContext = null;
     private MediaRecorder mMediaRecorder;
     private Camera mCamera = null;
     private String path = null;
     private Boolean isStart = false;
 
-    public MediaRecordService(Context context) {
-        this.mContext = context;
+
+    private MediaRecordService() {
     }
+
+    private static class SingletonHolder {
+        private static final MediaRecordService INSTANCE = new MediaRecordService();
+    }
+
+    public static MediaRecordService getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
 
     public void startRecordAudio() {
         mMediaRecorder = new MediaRecorder();
@@ -36,8 +43,10 @@ public class MediaRecordService {
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mMediaRecorder.setAudioEncodingBitRate(96000);
         mMediaRecorder.setAudioSamplingRate(48 * 1000);
+        mMediaRecorder.setAudioChannels(1);
+
         String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "3gp");
-        path = FileUtils.getExternalFullPath(mContext, fileName);
+        path = FileUtils.getExternalFullPath(App.getInstance(), fileName);
         mMediaRecorder.setOutputFile(path);
         mMediaRecorder.setAudioChannels(1);
         try {
@@ -54,6 +63,7 @@ public class MediaRecordService {
             /**
              TODO:WTF!!! record video will have a sound when MediaRecorder start or stop.
              But record audio no
+             TODO:Use ffmpeg replace MediaRecorder
              **/
             //TODO:可以选镜头
             mCamera = Camera.open(CameraService.getCameraId_low());
@@ -67,14 +77,16 @@ public class MediaRecordService {
             mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 
             mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            mMediaRecorder.setAudioEncodingBitRate(96000);
+            mMediaRecorder.setAudioEncodingBitRate(960 * 1000);
             mMediaRecorder.setAudioSamplingRate(48 * 1000);
+            mMediaRecorder.setAudioChannels(1);
 
             mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+            mMediaRecorder.setVideoEncodingBitRate(300 * 1000);
             mMediaRecorder.setVideoSize(640, 480);
 
             String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "mp4");
-            path = FileUtils.getExternalFullPath(mContext, fileName);
+            path = FileUtils.getExternalFullPath(App.getInstance(), fileName);
             mMediaRecorder.setOutputFile(path);
 
 //            mMediaRecorder.setMaxDuration(1 * 1000);
@@ -136,19 +148,4 @@ public class MediaRecordService {
         }
     }
 
-    private void setMuteAll(boolean mute) {
-        AudioManager manager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-
-        int[] streams = new int[]{
-                AudioManager.STREAM_ALARM,
-                AudioManager.STREAM_DTMF,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.STREAM_RING,
-                AudioManager.STREAM_SYSTEM,
-                AudioManager.STREAM_VOICE_CALL
-        };
-
-        for (int stream : streams)
-            manager.setStreamMute(stream, mute);
-    }
 }

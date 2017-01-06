@@ -114,7 +114,7 @@ public class LogUtils {
 
     private static void log(int logType, Object msg, Object... args) {
         String m = String.valueOf(msg);
-        if (getLogLevel() != LogLevel.NONE && !TextUtils.isEmpty(m)) {
+        if (getLogLevel() == LogLevel.FULL && !TextUtils.isEmpty(m)) {
             String tag = getTag();
             String message = getMessage(m, args);
             switch (logType) {

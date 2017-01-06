@@ -11,6 +11,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 
+import com.fs.fs.App;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FileUtils;
 import com.fs.fs.utils.LogUtils;
@@ -26,33 +27,26 @@ import java.util.List;
 
 public class CameraService {
 
-    private Context mContext = null;
     private CameraManager mCameraManager = null;
     private Camera mCamera = null;
 
-    public CameraService(Context context) {
-        this.mContext = context;
-        this.mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private CameraService() {
+        this.mCameraManager = (CameraManager) App.getInstance().getSystemService(Context.CAMERA_SERVICE);
     }
 
-    public void takePhoto() {
+    private static class SingletonHolder {
+        private static final CameraService INSTANCE = new CameraService();
+    }
 
+    public static CameraService getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    public void takePhoto(Integer cameraId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            String cameraId = null;
-            try {
-                cameraId = getCameraId_high();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (cameraId == null) {
-                return;
-            }
-            takePhoto_high(cameraId);
+            takePhoto_high(String.valueOf(cameraId));
         } else {
-            int cameraId = getCameraId_low();
-            if (cameraId == -1) {
-                return;
-            }
             try {
                 takePhoto_low(cameraId);
             } catch (IOException e) {
@@ -66,7 +60,9 @@ public class CameraService {
 //        mCameraManager.openCamera(cameraId, );
     }
 
-    private void takePhoto_low(int cameraId) throws IOException {
+    private void takePhoto_low(Integer cameraId) throws IOException {
+        cameraId = cameraId == null ? getCameraId_low() : cameraId;
+        if (cameraId == -1) return;
         mCamera = Camera.open(cameraId);
         mCamera.setPreviewTexture(new SurfaceTexture(10));
         Camera.Parameters params = mCamera.getParameters();
@@ -76,7 +72,9 @@ public class CameraService {
         Size size = getOptimalSize(params.getSupportedPictureSizes());
         params.setPictureSize(size.width, size.height);
         mCamera.setParameters(params);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            mCamera.enableShutterSound(false);
+        }
         mCamera.startPreview();
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
@@ -85,7 +83,7 @@ public class CameraService {
                 fileName = String.format("%s.%s", fileName, "jpg");
                 FileOutputStream out = null;
                 try {
-                    String path = FileUtils.getExternalFullPath(mContext, fileName);
+                    String path = FileUtils.getExternalFullPath(App.getInstance(), fileName);
                     LogUtils.d(path);
                     out = new FileOutputStream(path);
                     out.write(data);
@@ -117,7 +115,6 @@ public class CameraService {
      */
     public static Size getOptimalSize(List<Size> supportedPictureSizes) {
         Size size = null;
-
         for (Size supportedSize : supportedPictureSizes) {
             if (size == null) {
                 size = supportedSize;
@@ -127,11 +124,10 @@ public class CameraService {
                 }
             }
         }
-
         return size;
     }
 
-
+    @Deprecated
     private String getCameraId_high() throws CameraAccessException {
         String backId = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -151,7 +147,7 @@ public class CameraService {
     public static int getCameraId_low() {
         int backIndex = -1;
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        int cameraCount = cameraCount = Camera.getNumberOfCameras();
+        int cameraCount = Camera.getNumberOfCameras();
         for (int index = 0; index < cameraCount; index++) {
             Camera.getCameraInfo(index, cameraInfo);
             if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {

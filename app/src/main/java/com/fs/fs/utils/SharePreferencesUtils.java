@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import com.fs.fs.App;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,21 +25,21 @@ public class SharePreferencesUtils {
 
     private static SharedPreferences mSharedPreferences = null;
     private static SharedPreferences.Editor mEditor = null;
-    private static SharePreferencesUtils mSharePreferencesUtils = null;
+
 
     @SuppressLint("CommitPrefEdits")
-    public SharePreferencesUtils(Context context) {
-        mSharedPreferences = context.getApplicationContext().getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
+    private SharePreferencesUtils() {
+        mSharedPreferences = App.getInstance().getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
     }
 
+    private static class SingletonHolder {
+        private static final SharePreferencesUtils INSTANCE = new SharePreferencesUtils();
+    }
 
-//    public static synchronized SharePreferencesUtils getInstance(Context context) {
-//        if (mSharePreferencesUtils == null) {
-//            mSharePreferencesUtils = new SharePreferencesUtils(context);
-//        }
-//        return mSharePreferencesUtils;
-//    }
+    public static SharePreferencesUtils getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
 
     public void put(String key, Object value) {
         if (value instanceof String) {

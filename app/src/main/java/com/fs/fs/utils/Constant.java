@@ -34,4 +34,13 @@ public class Constant {
     public static final class SHARE_KEYS {
         public static final String SMS_HAS_READ = "sms_read";
     }
+
+    /**
+     * DeviceUtils
+     */
+    public static final class CAMERA {
+        public static final int FRONT = 1;
+        public static final int BACK = 0;
+        public static final int NONE = -1;
+    }
 }

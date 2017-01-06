@@ -2,6 +2,8 @@
 .gradle
 /local.properties
 .DS_Store
-/build
+/build/
 /captureis
 .idea/
+app/build/
+ffmpeg4android_lib/build/

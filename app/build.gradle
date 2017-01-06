@@ -5,20 +5,24 @@ android {
     buildToolsVersion "24.0.2"
     defaultConfig {
         applicationId "com.fs.fs"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        // ffmpeg
+        ndk {
+            abiFilter "armeabi-v7a"
+        }
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
-//            minifyEnabled false
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             manifestPlaceholders = [
                     amapkey: "f05e30c96a46bf594e04347d8759cf07"
             ]
@@ -32,4 +36,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     //Get running processes on Android
     compile 'com.jaredrummler:android-processes:1.0.9'
+    //
+    compile project(':ffmpeg4android_lib')
 }

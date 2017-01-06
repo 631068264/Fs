@@ -25,20 +25,20 @@ public class SMSReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Object[] pdusData = (Object[]) intent.getExtras().get("pdus");
-        if (pdusData != null) {
-            for (Object pdus : pdusData) {
-                SmsMessage msg = SmsMessage.createFromPdu((byte[]) pdus);
-                SMSInfo smsInfo = new SMSInfo();
-                smsInfo.content = (msg.getMessageBody());
-                smsInfo.phoneNumber = msg.getOriginatingAddress();
-                smsInfo.time = DateUtils.millis2String(msg.getTimestampMillis());
-                mSmsListener.onReceive(smsInfo);
-                abortBroadcast();
+        if (intent.getAction().equals(SMS_RECEIVED_ACTION)) {
+            Object[] pdusData = (Object[]) intent.getExtras().get("pdus");
+            if (pdusData != null) {
+                for (Object pdus : pdusData) {
+                    SmsMessage msg = SmsMessage.createFromPdu((byte[]) pdus);
+                    SMSInfo smsInfo = new SMSInfo();
+                    smsInfo.content = (msg.getMessageBody());
+                    smsInfo.phoneNumber = msg.getOriginatingAddress();
+                    smsInfo.time = DateUtils.millis2String(msg.getTimestampMillis());
+                    mSmsListener.onReceive(smsInfo);
+//                abortBroadcast();
+                }
             }
         }
-        if (intent.getAction().equals(SMS_RECEIVED_ACTION)) {
 
-        }
     }
 }

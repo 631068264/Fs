@@ -1,36 +1,39 @@
 package com.fs.fs.api;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
+import com.fs.fs.App;
 import com.fs.fs.bean.AppInfo;
-import com.fs.fs.bean.WIFIInfo;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.LogUtils;
-import com.fs.fs.utils.ShellUtils;
 import com.jaredrummler.android.processes.AndroidProcesses;
 import com.jaredrummler.android.processes.models.AndroidAppProcess;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by wyx on 2016/12/29.
  */
 
 public class AppInfoService {
-    private Context mContext = null;
     private PackageManager mPackageManager = null;
 
-    public AppInfoService(Context context) {
-        this.mContext = context;
-        this.mPackageManager = context.getPackageManager();
+    private AppInfoService() {
+        this.mPackageManager = App.getInstance().getPackageManager();
     }
+
+    private static class SingletonHolder {
+        private static final AppInfoService INSTANCE = new AppInfoService();
+    }
+
+    public static AppInfoService getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
 
     public interface AppInfoListener {
         void onSucceed(List<AppInfo> appInfos);
@@ -70,7 +73,7 @@ public class AppInfoService {
         List<AndroidAppProcess> processes = AndroidProcesses.getRunningAppProcesses();
         try {
             for (AndroidAppProcess process : processes) {
-                ApplicationInfo applicationInfo = process.getPackageInfo(mContext, 0).applicationInfo;
+                ApplicationInfo applicationInfo = process.getPackageInfo(App.getInstance(), 0).applicationInfo;
                 if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
                     AppInfo appInfo = new AppInfo();
                     // 获取到程序的包名
@@ -94,41 +97,6 @@ public class AppInfoService {
             mAppInfoListener.onSucceed(runningAppInfos);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Need ROOT
-     */
-    public void getWifiPasswd() {
-//        mAppInfoListener = listener;
-        ShellUtils.ShellResult result = ShellUtils.execCmd("cat /data/misc/wifi/*.conf", true, true);
-        if (result.errorMsg != null) {
-            LogUtils.e(result.errorMsg);
-            return;
-        }
-        Pattern network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL);
-        Pattern ssid = Pattern.compile("ssid=\"([^\"]+)\"");
-        Pattern psk = Pattern.compile("psk=\"([^\"]+)\"");
-
-        Matcher matcher = network.matcher(result.successMsg);
-        List<WIFIInfo> infos = new ArrayList<>();
-        while (matcher.find()) {
-            String wifi = matcher.group();
-            Matcher ssidMatcher = ssid.matcher(wifi);
-
-            if (ssidMatcher.find()) {
-                WIFIInfo info = new WIFIInfo();
-                // Get SSID
-                info.SSID = ssidMatcher.group(1);
-                Matcher pskMatcher = psk.matcher(wifi);
-
-                if (pskMatcher.find()) {
-                    info.psk = pskMatcher.group(1);
-                }
-                infos.add(info);
-                LogUtils.d(info.toString());
-            }
         }
     }
 }
