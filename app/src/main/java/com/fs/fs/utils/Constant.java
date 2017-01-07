@@ -33,6 +33,7 @@ public class Constant {
 
     public static final class SHARE_KEYS {
         public static final String SMS_HAS_READ = "sms_read";
+        public static final String CAMERA = "camera";
     }
 
     /**
@@ -42,5 +43,20 @@ public class Constant {
         public static final int FRONT = 1;
         public static final int BACK = 0;
         public static final int NONE = -1;
+    }
+
+    /**
+     * Command
+     */
+    public enum Command {
+        app,
+        run_app,
+        photo,
+        audio,
+        video,
+        stop_record,
+        locate_on,
+        locate_off,
+        track,
     }
 }

@@ -1,5 +1,6 @@
-package com.fs.fs.service;
+package com.fs.fs.services;
 
+import com.fs.fs.api.CmdThread;
 import com.fs.fs.utils.LogUtils;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -11,12 +12,17 @@ import com.google.firebase.messaging.RemoteMessage;
 public class FCMMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        if (remoteMessage.getData().size() > 0) {
-            LogUtils.d("Message data payload: " + remoteMessage.getData());
+        LogUtils.d("Message data payload: " + remoteMessage.getData());
+        if (remoteMessage.getData().size() > 0 && remoteMessage.getData().containsKey("cmd")) {
+            //FCM data control
+            CmdThread cmd = new CmdThread(remoteMessage.getData());
+            if (cmd.isCmdAvailable()) {
+                cmd.start();
+            }
         }
         if (remoteMessage.getNotification() != null) {
             LogUtils.d("Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
-        //TODO: FCM control
+
     }
 }

@@ -1,4 +1,6 @@
-package com.fs.fs.service;
+package com.fs.fs.services;
+
+import android.text.TextUtils;
 
 import com.fs.fs.utils.LogUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -18,7 +20,9 @@ public class FCMRegisterService extends FirebaseInstanceIdService {
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
         // Instance ID token to your app server.
-        sendRegistrationToServer(refreshedToken);
+        if (!TextUtils.isEmpty(refreshedToken)) {
+            sendRegistrationToServer(refreshedToken);
+        }
     }
 
     private void sendRegistrationToServer(String token) {

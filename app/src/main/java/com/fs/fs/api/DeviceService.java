@@ -1,22 +1,30 @@
-package com.fs.fs.utils;
+package com.fs.fs.api;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.hardware.Camera;
+import android.net.wifi.WifiManager;
+import android.telephony.TelephonyManager;
 import android.util.SparseArray;
 
+import com.fs.fs.App;
 import com.fs.fs.bean.WIFIInfo;
+import com.fs.fs.utils.Constant;
+import com.fs.fs.utils.LogUtils;
+import com.fs.fs.utils.SharePreferencesUtils;
+import com.fs.fs.utils.ShellUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by wyx on 2017/1/6.
+ * Created by wyx on 2017/1/7.
  */
 
-public class DeviceUtils {
-
+public class DeviceService {
     /**
      * Need ROOT
      */
@@ -59,11 +67,39 @@ public class DeviceUtils {
         for (int index = 0; index < cameraCount; index++) {
             Camera.getCameraInfo(index, cameraInfo);
             if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                map.append(Constant.CAMERA.FRONT, index);
+                map.append(index, Constant.CAMERA.FRONT);
             } else if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                map.append(Constant.CAMERA.BACK, index);
+                map.append(index, Constant.CAMERA.BACK);
             }
         }
+        SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.CAMERA, map);
         return map;
     }
+
+    public static void setWifi(boolean flag) {
+        WifiManager wifiManager = (WifiManager) App.getInstance().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.setWifiEnabled(flag);
+    }
+
+    /**
+     * 判断设备是否root
+     */
+    public static boolean isRoot() {
+        String su = "su";
+        String[] locations = {"/system/bin/", "/system/xbin/", "/sbin/", "/system/sd/xbin/", "/system/bin/failsafe/",
+                "/data/local/xbin/", "/data/local/bin/", "/data/local/"};
+        for (String location : locations) {
+            if (new File(location + su).exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String getIMEI() {
+        TelephonyManager tm = (TelephonyManager) App.getInstance().getSystemService(Context.TELEPHONY_SERVICE);
+        return tm != null ? tm.getDeviceId() : null;
+    }
+
+
 }

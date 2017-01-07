@@ -12,8 +12,8 @@ import com.fs.fs.api.ProviderService;
  * Created by wyx on 2017/1/2.
  */
 public class CallReceiver extends BroadcastReceiver {
-    private static final String INCOMING_ACTION = "android.intent.action.NEW_OUTGOING_CALL";
-    private static final String OUTGOING_ACTION = "android.intent.action.PHONE_STATE";
+    private static final String OUTGOING_ACTION = "android.intent.action.NEW_OUTGOING_CALL";
+    private static final String INCOMING_ACTION = "android.intent.action.PHONE_STATE";
     private static ProviderService.CallsListener mCallsListener;
 
     public static void setListener(ProviderService.CallsListener listener) {

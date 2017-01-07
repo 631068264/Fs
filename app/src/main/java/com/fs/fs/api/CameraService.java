@@ -63,6 +63,7 @@ public class CameraService {
     private void takePhoto_low(Integer cameraId) throws IOException {
         cameraId = cameraId == null ? getCameraId_low() : cameraId;
         if (cameraId == -1) return;
+        release();
         mCamera = Camera.open(cameraId);
         mCamera.setPreviewTexture(new SurfaceTexture(10));
         Camera.Parameters params = mCamera.getParameters();
@@ -98,13 +99,19 @@ public class CameraService {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    mCamera.stopPreview();
-                    mCamera.release();
-                    mCamera = null;
+                    release();
                 }
             }
         });
 
+    }
+
+    private void release() {
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
     }
 
     /**

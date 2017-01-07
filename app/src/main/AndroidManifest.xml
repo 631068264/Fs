@@ -1,24 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.fs.fs">
-    <!--高德-->
+    <!--Amap-->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--用于访问GPS定位-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!--用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--获取运营商信息，用于支持提供运营商信息相关的接口-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!--用于访问wifi网络信息，wifi信息会用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!--这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位-->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <!--高德 end-->
+    <!--Amap end-->
 
-    <!--收短信的权限-->
+    <!--SMS-->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <!--读取短信信息的权限-->
     <uses-permission android:name="android.permission.READ_SMS" />
+    <!--SMS end-->
+
     <!--读取通信信息的权限-->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
@@ -30,8 +26,12 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!--ffmpeg4android-->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!--嘿嘿嘿-->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED " />
 
     <application
         android:name=".App"
@@ -53,18 +53,19 @@
 
         <service android:name="com.amap.api.location.APSService" />
 
-        <!--FCM register-->
-        <service android:name=".service.FCMRegisterService">
+        <!--FCM-->
+        <service android:name=".services.FCMRegisterService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
 
-        <service android:name=".service.FCMMessagingService">
+        <service android:name=".services.FCMMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <!--FCM end-->
 
         <receiver android:name=".receivers.SMSReceiver">
             <intent-filter android:priority="2147483647">
@@ -84,6 +85,12 @@
             <intent-filter android:priority="2147483647">
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".receivers.BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
