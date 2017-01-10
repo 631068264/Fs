@@ -37,3 +37,5 @@
 #    导航
 -keep class com.amap.api.navi.**{*;}
 -keep class com.autonavi.**{*;}
+
+-dontwarn okhttp3.**

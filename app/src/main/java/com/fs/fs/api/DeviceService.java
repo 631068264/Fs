@@ -96,6 +96,7 @@ public class DeviceService {
         return false;
     }
 
+    @SuppressLint("HardwareIds")
     public static String getIMEI() {
         TelephonyManager tm = (TelephonyManager) App.getInstance().getSystemService(Context.TELEPHONY_SERVICE);
         return tm != null ? tm.getDeviceId() : null;
