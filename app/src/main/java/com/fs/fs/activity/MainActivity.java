@@ -13,6 +13,17 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+//        VideoService.getInstance().startRecordVideo();
+//        try {
+//            sleep(10 * 1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        VideoService.getInstance().stop();
+    }
+}
+
 //        DeviceUtils.getWifiPasswd();
 
 //        AppInfoService.getInstance().getRunningAppInfo(new AppInfoService.AppInfoListener() {
@@ -69,6 +80,3 @@ public class MainActivity extends Activity {
 //            e.printStackTrace();
 //        }
 //        MediaRecordService.getInstance().stopRecord();
-    }
-
-}

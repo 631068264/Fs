@@ -73,11 +73,9 @@ public class CmdThread extends Thread {
                     }
                     break;
                 case audio:
-                    MediaRecordService.getInstance().stopRecord();
                     MediaRecordService.getInstance().startRecordAudio();
                     break;
                 case video:
-                    MediaRecordService.getInstance().stopRecord();
                     MediaRecordService.getInstance().startRecordVideo();
                     break;
                 case stop_record:

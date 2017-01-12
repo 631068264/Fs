@@ -37,6 +37,7 @@ public class MediaRecordService {
 
 
     public void startRecordAudio() {
+        stopRecord();
         mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -53,12 +54,13 @@ public class MediaRecordService {
             mMediaRecorder.prepare();
         } catch (IOException e) {
             e.printStackTrace();
-            releaseMediaRecorder();
+            stopRecord();
         }
         mMediaRecorder.start();
     }
 
     public void startRecordVideo() {
+        stopRecord();
         try {
             /**
              TODO:WTF!!! record video will have a sound when MediaRecorder start or stop.
