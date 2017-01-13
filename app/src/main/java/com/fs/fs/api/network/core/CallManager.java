@@ -34,8 +34,10 @@ public class CallManager {
     public void removeCall(String url) {
         if (!TextUtils.isEmpty(url)) {
             Call call = callMap.get(url);
-            call.cancel();
-            callMap.remove(url);
+            if (call != null) {
+                call.cancel();
+                callMap.remove(url);
+            }
         }
     }
 }

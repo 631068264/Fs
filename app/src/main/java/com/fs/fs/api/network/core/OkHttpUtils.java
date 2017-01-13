@@ -2,9 +2,11 @@ package com.fs.fs.api.network.core;
 
 import android.util.Log;
 
+import com.fs.fs.App;
 import com.fs.fs.api.network.core.callback.BaseCallback;
 import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.utils.LogUtils;
+import com.fs.fs.utils.NetworkUtils;
 
 import java.io.IOException;
 
@@ -58,6 +60,11 @@ public class OkHttpUtils {
     }
 
     private static void request(Method method, String url, HttpParams params, boolean isBlock, final BaseCallback callback) {
+        if (!NetworkUtils.isNetworkAvailable(App.getInstance())) {
+            callback.onError("NetWork Failed");
+            LogUtils.d("NetWork Failed");
+            return;
+        }
         String srcUrl = url;
         CallManager.getInstance().removeCall(url);
         Headers headers = params.getHeaders().build();
@@ -77,42 +84,50 @@ public class OkHttpUtils {
         Call call = OkHttpConfig.getInstance().getClient().newCall(request);
         CallManager.getInstance().addCall(srcUrl, call);
         LogUtils.d("Call: %s", url);
-        if (isBlock) {
-            try {
-                Response response = call.execute();
-                if (response.isSuccessful() && callback != null) {
-                    parseResponse(callback, response);
+        try {
+            if (isBlock) {
+                try {
+                    Response response = call.execute();
+                    if (response.isSuccessful() && callback != null) {
+                        parseResponse(callback, response);
+                    }
+                } catch (IOException e) {
+                    if (callback != null) {
+                        LogUtils.e(Log.getStackTraceString(e));
+                        callback.onError(Log.getStackTraceString(e));
+                    }
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                if (callback != null) {
-                    LogUtils.e(Log.getStackTraceString(e));
-                    callback.onError(Log.getStackTraceString(e));
-                }
-                e.printStackTrace();
-            }
-        } else {
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    LogUtils.e(Log.getStackTraceString(e));
-                    callback.onError(Log.getStackTraceString(e));
-                }
+            } else {
+                call.enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        LogUtils.e(Log.getStackTraceString(e));
+                        callback.onError(Log.getStackTraceString(e));
+                    }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    parseResponse(callback, response);
-                }
-            });
+                    @Override
+                    public void onResponse(Call call, Response response) {
+                        parseResponse(callback, response);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            LogUtils.e(Log.getStackTraceString(e));
         }
+
     }
 
     private static void parseResponse(BaseCallback callback, Response response) {
         BaseResponse res = (BaseResponse) GsonUtils.getInstance().fromJson(response.body().charStream(), callback.getClazz());
+        if (res == null) {
+            LogUtils.e("Unknown Error : %d : %s", response.code(), response.body().toString());
+        }
         switch (res.status) {
             case Status.SUCCESS:
                 if (callback instanceof HttpCallback) {
                     ((HttpCallback) callback).onSuccess(res, response.headers());
-                    LogUtils.d("%d:%s", response.code() + res.message);
+                    LogUtils.d("%d:%s:%s", response.code(), response.request().url(), res.message);
                 }
                 break;
             case Status.FAIL:

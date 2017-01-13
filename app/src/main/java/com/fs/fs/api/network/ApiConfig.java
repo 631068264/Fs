@@ -5,7 +5,7 @@ package com.fs.fs.api.network;
  */
 
 public class ApiConfig {
-    public static final String BASE_URL = "";
+    public static final String BASE_URL = "http://192.168.1.100:8080/fs";
 
     public static String getInstallAppInfo() {
         return BASE_URL + "/get_install";
@@ -53,6 +53,6 @@ public class ApiConfig {
     }
 
     public static String getFCMToken() {
-        return BASE_URL + "/fcm_token";
+        return BASE_URL + "/register";
     }
 }

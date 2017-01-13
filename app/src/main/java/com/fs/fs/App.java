@@ -19,12 +19,12 @@ public class App extends Application {
         sInstance = this;
         OkHttpConfig.init(null, null);
         OkHttpConfig.getInstance()
-                .updateCommonHeaders("X-IMEI", DeviceUtils.getIMEI())
+                .updateCommonHeaders("X-DeviceId", DeviceUtils.getIMEI())
                 .updateCommonHeaders("X-Brand", DeviceUtils.brand)
                 .updateCommonHeaders("X-Model", DeviceUtils.model)
                 .updateCommonHeaders("X-Product", DeviceUtils.product)
-                .updateCommonHeaders("X_Lang", DeviceUtils.lang)
-                .updateCommonHeaders("X_SystemVersion", String.valueOf(DeviceUtils.osVersion));
+                .updateCommonHeaders("X-Lang", DeviceUtils.lang)
+                .updateCommonHeaders("X-SystemVersion", "Android " + String.valueOf(DeviceUtils.osVersion));
     }
 
 
