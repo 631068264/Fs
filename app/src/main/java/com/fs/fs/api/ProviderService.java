@@ -323,7 +323,7 @@ public class ProviderService {
         if (paths.size() > 0) {
             Set<String> newSet = new HashSet<>();
             newSet.addAll(old);
-            newSet.retainAll(paths.keySet());
+            newSet.addAll(paths.keySet());
             SharePreferencesUtils.getInstance().put(shareKey, newSet);
             return paths.values();
         }
