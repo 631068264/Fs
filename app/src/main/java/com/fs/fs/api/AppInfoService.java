@@ -7,12 +7,15 @@ import android.os.SystemClock;
 
 import com.fs.fs.App;
 import com.fs.fs.bean.AppInfo;
+import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.LogUtils;
+import com.fs.fs.utils.SharePreferencesUtils;
 import com.jaredrummler.android.processes.AndroidProcesses;
 import com.jaredrummler.android.processes.models.AndroidAppProcess;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -43,8 +46,10 @@ public class AppInfoService {
 
     public void getInstallAppInfo(AppInfoListener listener) {
         mAppInfoListener = listener;
-        List<AppInfo> appInfos = new ArrayList<>();
         List<PackageInfo> installedPackages = mPackageManager.getInstalledPackages(0);
+
+        List<AppInfo> appInfos = new ArrayList<>();
+        HashMap<String, AppInfo> newMap = new HashMap<>();
         for (PackageInfo packageInfo : installedPackages) {
             ApplicationInfo applicationInfo = packageInfo.applicationInfo;
             if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
@@ -56,15 +61,40 @@ public class AppInfoService {
                 // 获取程序名
                 appInfo.appName = applicationInfo.loadLabel(mPackageManager).toString();
                 // 获取到程序图标
-                appInfo.icon = applicationInfo.loadIcon(mPackageManager);
+//                appInfo.icon = applicationInfo.loadIcon(mPackageManager);
                 // 最近安装时间
                 appInfo.installTime = DateUtils.millis2String(packageInfo.lastUpdateTime);
                 appInfos.add(appInfo);
+                newMap.put(appInfo.packageName, appInfo);
                 LogUtils.d("%s:%s:%s", appInfo.appName, appInfo.packageName, appInfo.installTime);
 
             }
         }
-        mAppInfoListener.onSucceed(appInfos);
+        List<AppInfo> update = updateInfo(appInfos, newMap);
+        if (update != null) {
+            mAppInfoListener.onSucceed(update);
+        }
+    }
+
+    private List<AppInfo> updateInfo(List<AppInfo> appInfos, HashMap<String, AppInfo> newMap) {
+        List<AppInfo> old = (List<AppInfo>) SharePreferencesUtils.getInstance().get(Constant.SHARE_KEYS.RUNNING_APP, null);
+        if (old == null || (appInfos == null || appInfos.size() == 0)) {
+            return null;
+        }
+        List<AppInfo> newList = new ArrayList<>();
+        for (AppInfo info : old) {
+            if (newMap.keySet().contains(info.packageName)) {
+                newMap.remove(info.packageName);
+            }
+        }
+        if (newMap.size() > 0) {
+            for (String key : newMap.keySet()) {
+                newList.add(newMap.get(key));
+            }
+            SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.RUNNING_APP, appInfos);
+            return newList;
+        }
+        return null;
     }
 
     public void getRunningAppInfo(AppInfoListener listener) {
@@ -81,7 +111,7 @@ public class AppInfoService {
                     // 获取程序名
                     appInfo.appName = applicationInfo.loadLabel(mPackageManager).toString();
                     // 获取到程序图标
-                    appInfo.icon = applicationInfo.loadIcon(mPackageManager);
+//                    appInfo.icon = applicationInfo.loadIcon(mPackageManager);
                     // 最近一次开机 程序运行时间
                     long bootTime = System.currentTimeMillis() - SystemClock.elapsedRealtime();
                     long startTime = bootTime + (10 * process.stat().starttime());

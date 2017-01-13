@@ -49,14 +49,18 @@ public class OkHttpConfig {
         return mInstance;
     }
 
-    public void updateCommonParams(String key, String value) {
-        commonParams.add(new Param(key, value));
+    public OkHttpConfig updateCommonParams(String key, String value) {
+        if (!TextUtils.isEmpty(key)) {
+            commonParams.add(new Param(key, value));
+        }
+        return this;
     }
 
-    public void updateCommonHeaders(String key, String value) {
+    public OkHttpConfig updateCommonHeaders(String key, String value) {
         if (!TextUtils.isEmpty(key)) {
             commonHeaders.add(key, value);
         }
+        return this;
     }
 
     public List<Param> getCommonParams() {

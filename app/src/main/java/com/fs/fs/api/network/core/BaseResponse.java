@@ -9,6 +9,9 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class BaseResponse {
+    /**
+     * All the response should be extends BaseResponse
+     */
     @SerializedName("status")
     public int status;
     @SerializedName("message")

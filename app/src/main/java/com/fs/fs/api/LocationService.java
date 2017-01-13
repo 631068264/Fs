@@ -12,7 +12,6 @@ import com.fs.fs.App;
  */
 
 public class LocationService implements AMapLocationListener {
-    //TODO:GPS track client & server
     private static final long TIME_OUT = 2 * 10000;
     private static final long INTERVAL = 2 * 1000;
 

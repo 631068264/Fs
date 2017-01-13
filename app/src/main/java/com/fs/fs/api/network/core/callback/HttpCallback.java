@@ -10,6 +10,10 @@ import okhttp3.Headers;
 
 public abstract class HttpCallback extends BaseCallback {
 
+    public HttpCallback(Class clazz) {
+        super(clazz);
+    }
+
     public abstract void onSuccess(BaseResponse httpResponse, Headers headers);
 
 

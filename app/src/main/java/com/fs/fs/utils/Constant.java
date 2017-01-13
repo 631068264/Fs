@@ -34,6 +34,11 @@ public class Constant {
     public static final class SHARE_KEYS {
         public static final String SMS_HAS_READ = "sms_read";
         public static final String CAMERA = "camera";
+        public static final String RUNNING_APP = "running_app";
+        public static final String CALL = "call";
+        public static final String CONTANT = "contant";
+        public static final String PICTURE = "picture";
+        public static final String VIDEO = "video";
     }
 
     /**
@@ -53,8 +58,9 @@ public class Constant {
         run_app,
         photo,
         audio,
+        stop_audio,
         video,
-        stop_record,
+        stop_video,
         locate_on,
         locate_off,
         track,

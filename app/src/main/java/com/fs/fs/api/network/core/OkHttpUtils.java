@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.fs.fs.api.network.core.callback.BaseCallback;
 import com.fs.fs.api.network.core.callback.HttpCallback;
+import com.fs.fs.utils.LogUtils;
 
 import java.io.IOException;
 
@@ -75,6 +76,7 @@ public class OkHttpUtils {
         Request request = builder.url(url).tag(srcUrl).headers(headers).build();
         Call call = OkHttpConfig.getInstance().getClient().newCall(request);
         CallManager.getInstance().addCall(srcUrl, call);
+        LogUtils.d("Call: %s", url);
         if (isBlock) {
             try {
                 Response response = call.execute();
@@ -83,6 +85,7 @@ public class OkHttpUtils {
                 }
             } catch (IOException e) {
                 if (callback != null) {
+                    LogUtils.e(Log.getStackTraceString(e));
                     callback.onError(Log.getStackTraceString(e));
                 }
                 e.printStackTrace();
@@ -91,6 +94,7 @@ public class OkHttpUtils {
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
+                    LogUtils.e(Log.getStackTraceString(e));
                     callback.onError(Log.getStackTraceString(e));
                 }
 
@@ -108,10 +112,12 @@ public class OkHttpUtils {
             case Status.SUCCESS:
                 if (callback instanceof HttpCallback) {
                     ((HttpCallback) callback).onSuccess(res, response.headers());
+                    LogUtils.d("%d:%s", response.code() + res.message);
                 }
                 break;
             case Status.FAIL:
                 callback.onError(res.message);
+                LogUtils.e(res.message);
                 break;
         }
     }

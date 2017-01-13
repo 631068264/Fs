@@ -79,4 +79,4 @@ public class MainActivity extends Activity {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-//        MediaRecordService.getInstance().stopRecord();
+//        MediaRecordService.getInstance().stopRecordVideo();

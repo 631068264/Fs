@@ -32,9 +32,9 @@ public class CallReceiver extends BroadcastReceiver {
             case TelephonyManager.CALL_STATE_OFFHOOK:
                 mCallsListener.onStart();
                 break;
-            case TelephonyManager.CALL_STATE_RINGING:
-                mCallsListener.onStart();
-                break;
+//            case TelephonyManager.CALL_STATE_RINGING:
+//                mCallsListener.onStart();
+//                break;
             case TelephonyManager.CALL_STATE_IDLE:
                 mCallsListener.onFinish();
                 break;
@@ -53,7 +53,6 @@ public class CallReceiver extends BroadcastReceiver {
         if (!TextUtils.isEmpty(phoneNumber)) {
             return null;
         }
-        // TODO: phoneNumber.length() < 7
         Boolean isOk = mCallsListener.onPhoneNumber(phoneNumber);
         return isOk ? phoneNumber : null;
     }

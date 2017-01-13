@@ -5,5 +5,9 @@ package com.fs.fs.api.network.core.callback;
  */
 @Deprecated
 public abstract class FileCallback extends BaseCallback {
+    public FileCallback(Class clazz) {
+        super(clazz);
+    }
+
     public abstract void onProgress(int progress, boolean done, long networkSpeed);
 }
