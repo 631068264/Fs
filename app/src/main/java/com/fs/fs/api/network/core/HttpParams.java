@@ -2,9 +2,9 @@ package com.fs.fs.api.network.core;
 
 import android.text.TextUtils;
 
+import com.fs.fs.utils.EncodeUtils;
+
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +27,6 @@ public class HttpParams {
     private List<Param> params = new ArrayList<>();
     private List<Param> files = new ArrayList<>();
     private HashMap<String, Object> jsonMap = new HashMap<>();
-    private boolean urlEncoder;//是否进行URL编码
 
     public HttpParams() {
         initCommon();
@@ -186,21 +185,12 @@ public class HttpParams {
         if (params.size() > 0) {
             StringBuilder buffer = new StringBuilder();
             buffer.append("?");
-            int flag = 0;
             for (Param param : params) {
-                try {
-                    param.key = URLEncoder.encode(param.key, "UTF-8");
-                    param.value = URLEncoder.encode(param.value, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                buffer.append(param.key).append("=").append(param.value);
-
-                if (++flag != params.size()) {
-                    buffer.append("&");
-                }
+                param.key = EncodeUtils.urlDecode(param.key);
+                param.value = EncodeUtils.urlDecode(param.value);
+                buffer.append(param.key).append("=").append(param.value).append("&");
             }
-            result = buffer.toString();
+            result = buffer.substring(0, buffer.length() - 1);
         }
         return result;
     }

@@ -121,7 +121,7 @@ public class OkHttpUtils {
     private static void parseResponse(BaseCallback callback, Response response) {
         BaseResponse res = (BaseResponse) GsonUtils.getInstance().fromJson(response.body().charStream(), callback.getClazz());
         if (res == null) {
-            LogUtils.e("Unknown Error : %d : %s", response.code(), response.body().toString());
+            LogUtils.e("Unknown Error : %d : %s:%s", response.code(), response.request().url(), response.body().toString());
         }
         switch (res.status) {
             case Status.SUCCESS:

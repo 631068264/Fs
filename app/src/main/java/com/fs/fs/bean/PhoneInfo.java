@@ -1,10 +1,12 @@
 package com.fs.fs.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by wyx on 2016/12/31.
  */
 
-public class PhoneInfo {
+public class PhoneInfo implements Serializable {
     public String name = "";
     public String phoneNumber = "";
     public String time = "";

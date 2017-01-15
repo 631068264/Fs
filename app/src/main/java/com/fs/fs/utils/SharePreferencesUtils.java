@@ -3,7 +3,6 @@ package com.fs.fs.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Base64;
 
 import com.fs.fs.App;
 
@@ -69,12 +68,10 @@ public class SharePreferencesUtils {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(bean);
-
-            String base = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+            String base = EncodeUtils.base64Encode(baos.toByteArray());
             mEditor.putString(key, base);
-
-            baos.close();
             oos.close();
+            baos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,7 +94,7 @@ public class SharePreferencesUtils {
                 return defaultValue;
             }
             try {
-                byte[] base64 = Base64.decode(base.getBytes(), Base64.DEFAULT);
+                byte[] base64 = EncodeUtils.base64Decode(base);
                 ByteArrayInputStream bais = new ByteArrayInputStream(base64);
                 ObjectInputStream bis = new ObjectInputStream(bais);
                 Object object = bis.readObject();

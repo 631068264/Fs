@@ -7,7 +7,9 @@ import com.fs.fs.api.network.core.BaseResponse;
 import com.fs.fs.api.network.core.HttpParams;
 import com.fs.fs.api.network.core.OkHttpUtils;
 import com.fs.fs.api.network.core.callback.HttpCallback;
+import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.LogUtils;
+import com.fs.fs.utils.SharePreferencesUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
@@ -33,6 +35,7 @@ public class FCMRegisterService extends FirebaseInstanceIdService {
     }
 
     private void sendRegistrationToServer(String token) {
+        SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.FCM, token);
         OkHttpUtils.postAsync(ApiConfig.getFCMToken(), new HttpParams().addJson("token", token), new HttpCallback(BaseResponse.class) {
             @Override
             public void onSuccess(BaseResponse httpResponse, Headers headers) {

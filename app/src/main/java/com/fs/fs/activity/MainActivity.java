@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.fs.fs.R;
+import com.fs.fs.api.AppInfoService;
 
 
 public class MainActivity extends Activity {
@@ -21,6 +22,9 @@ public class MainActivity extends Activity {
 //            e.printStackTrace();
 //        }
 //        VideoService.getInstance().stop();
+
+//        AppInfoService.getInstance().getInstallAppInfo();
+        AppInfoService.getInstance().getRunningAppInfo();
     }
 }
 

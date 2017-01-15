@@ -39,6 +39,7 @@ public class Constant {
         public static final String CONTANT = "contant";
         public static final String PICTURE = "picture";
         public static final String VIDEO = "video";
+        public static final String FCM = "fcm";
     }
 
     /**
