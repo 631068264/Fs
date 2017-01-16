@@ -3,6 +3,7 @@ package com.fs.fs;
 import android.app.Application;
 import android.content.Context;
 
+import com.fs.fs.api.network.ApiConfig;
 import com.fs.fs.api.network.core.OkHttpConfig;
 import com.fs.fs.utils.DeviceUtils;
 
@@ -17,7 +18,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-        OkHttpConfig.init(null, null);
+        OkHttpConfig.init(null, ApiConfig.BASE_URL);
         OkHttpConfig.getInstance()
                 .updateCommonHeaders("X-DeviceId", DeviceUtils.getIMEI())
                 .updateCommonHeaders("X-Brand", DeviceUtils.brand)

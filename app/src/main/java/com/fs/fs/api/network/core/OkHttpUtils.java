@@ -31,12 +31,12 @@ public class OkHttpUtils {
     }
 
     public static void getAsync(String url, HttpParams params, BaseCallback callback) {
-        url += OkHttpConfig.getInstance().getBaseUrl();
+        url = OkHttpConfig.getInstance().getBaseUrl() + url;
         request(Method.GET, url, params, false, callback);
     }
 
     public static void get(String url, HttpParams params, BaseCallback callback) {
-        url += OkHttpConfig.getInstance().getBaseUrl();
+        url = OkHttpConfig.getInstance().getBaseUrl() + url;
         request(Method.GET, url, params, true, callback);
     }
 
@@ -46,12 +46,12 @@ public class OkHttpUtils {
     }
 
     public static void post(String url, HttpParams params, BaseCallback callback) {
-        url += OkHttpConfig.getInstance().getBaseUrl();
+        url = OkHttpConfig.getInstance().getBaseUrl() + url;
         request(Method.POST, url, params, true, callback);
     }
 
     public static void postAsync(String url, HttpParams params, BaseCallback callback) {
-        url += OkHttpConfig.getInstance().getBaseUrl();
+        url = OkHttpConfig.getInstance().getBaseUrl() + url;
         request(Method.POST, url, params, false, callback);
     }
 
@@ -122,6 +122,7 @@ public class OkHttpUtils {
         BaseResponse res = (BaseResponse) GsonUtils.getInstance().fromJson(response.body().charStream(), callback.getClazz());
         if (res == null) {
             LogUtils.e("Unknown Error : %d : %s:%s", response.code(), response.request().url(), response.body().toString());
+            return;
         }
         switch (res.status) {
             case Status.SUCCESS:

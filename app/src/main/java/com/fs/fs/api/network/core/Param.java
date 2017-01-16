@@ -2,6 +2,8 @@ package com.fs.fs.api.network.core;
 
 import android.text.TextUtils;
 
+import java.io.File;
+
 /**
  * Created by wyx on 2017/1/9.
  */
@@ -16,9 +18,9 @@ public class Param {
         this.value = value;
     }
 
-    public Param(String key, FileParam file) {
+    public Param(String key, File file) {
         this.key = key;
-        this.file = file;
+        this.file = new FileParam(file);
     }
 
     public Param() {

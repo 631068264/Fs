@@ -89,13 +89,10 @@ public class HttpParams {
     }
 
     public HttpParams addFile(String key, File file) {
-        if (isFileEmpty(file)) {
+        if (isFileEmpty(file) || TextUtils.isEmpty(key)) {
             return this;
         }
-        if (!TextUtils.isEmpty(key)) {
-            return this;
-        }
-        files.add(new Param(key, new FileParam(file)));
+        files.add(new Param(key, file));
         return this;
     }
 

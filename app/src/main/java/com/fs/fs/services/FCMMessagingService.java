@@ -17,7 +17,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
             //FCM data control
             CmdThread cmd = new CmdThread(remoteMessage.getData());
             if (cmd.isCmdAvailable()) {
-                cmd.start();
+                new Thread(cmd).start();
             }
         }
         if (remoteMessage.getNotification() != null) {

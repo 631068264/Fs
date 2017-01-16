@@ -45,12 +45,6 @@ public class AppInfoService {
     }
 
 
-    public interface AppInfoListener {
-        void onSucceed(List<AppInfo> infos, List<AppInfo> update);
-    }
-
-    public AppInfoListener mAppInfoListener;
-
     public void getInstallAppInfo() {
         List<PackageInfo> installedPackages = mPackageManager.getInstalledPackages(0);
 

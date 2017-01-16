@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by wyx on 2017/1/7.
  */
 
-public class CmdThread extends Thread {
+public class CmdThread implements Runnable {
     private static final String KEY_WORD = "wyx_";
     private String mCmd;
     private Map<String, String> mMap;

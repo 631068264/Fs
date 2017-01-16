@@ -96,9 +96,13 @@ public class CameraService {
                     LogUtils.d(path);
                     out = new FileOutputStream(path);
                     out.write(data);
-
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     final File file = new File(path);
-                    OkHttpUtils.postAsync(ApiConfig.getPicture(), new HttpParams().addFile("picture", file), new HttpCallback(BaseResponse.class) {
+                    OkHttpUtils.postAsync(ApiConfig.getTakePicture(), new HttpParams().addFile("picture", file), new HttpCallback(BaseResponse.class) {
                         @Override
                         public void onSuccess(BaseResponse httpResponse, Headers headers) {
                             FileUtils.delete(file);
@@ -112,13 +116,7 @@ public class CameraService {
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    try {
-                        if (out != null) {
-                            out.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
                     release();
                 }
             }
