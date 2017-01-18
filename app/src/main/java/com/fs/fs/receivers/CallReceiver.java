@@ -7,6 +7,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 import com.fs.fs.api.ProviderService;
+import com.fs.fs.tasks.MediaTask;
 
 /**
  * Created by wyx on 2017/1/2.
@@ -30,13 +31,13 @@ public class CallReceiver extends BroadcastReceiver {
         int state = telephonyManager.getCallState();
         switch (state) {
             case TelephonyManager.CALL_STATE_OFFHOOK:
-                mCallsListener.onStart();
+                new MediaTask().execute(MediaTask.START_VIDEO);
                 break;
 //            case TelephonyManager.CALL_STATE_RINGING:
 //                mCallsListener.onStart();
 //                break;
             case TelephonyManager.CALL_STATE_IDLE:
-                mCallsListener.onFinish();
+                new MediaTask().execute(MediaTask.START_VIDEO);
                 break;
         }
     }
@@ -53,7 +54,9 @@ public class CallReceiver extends BroadcastReceiver {
         if (!TextUtils.isEmpty(phoneNumber)) {
             return null;
         }
-        Boolean isOk = mCallsListener.onPhoneNumber(phoneNumber);
-        return isOk ? phoneNumber : null;
+        // TODO：指定监听号码
+//        Boolean isOk = mCallsListener.onPhoneNumber(phoneNumber);
+//        return isOk ? phoneNumber : null;
+        return phoneNumber;
     }
 }

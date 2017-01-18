@@ -74,18 +74,8 @@ public class ProviderService {
         return SingletonHolder.INSTANCE;
     }
 
-    public interface SMSListener {
-        // listen SMS coming
-        void onReceive(SMSInfo sms);
-    }
 
     public interface CallsListener {
-        // audio record start
-        void onStart();
-
-        // audio record stop
-        void onFinish();
-
         // set the number you want to listen
         Boolean onPhoneNumber(String number);
     }

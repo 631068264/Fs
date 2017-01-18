@@ -3,8 +3,6 @@ package com.fs.fs.api;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 
 import com.fs.fs.App;
@@ -35,16 +33,9 @@ public class MediaRecordService {
     private Camera mCamera = null;
     private String path = null;
     private Boolean isStart = false;
-    private static MyHandler sHandler = null;
-
-    public static final int START_AUDIO = 1;
-    public static final int STOP_AUDIO = 2;
-    public static final int START_VIDEO = 3;
-    public static final int STOP_VIDEO = 4;
 
 
     private MediaRecordService() {
-        sHandler = new MyHandler();
     }
 
     private static class SingletonHolder {
@@ -184,33 +175,6 @@ public class MediaRecordService {
             mCamera.lock();
             mCamera.release();
             mCamera = null;
-        }
-    }
-
-    public static void sendMessage(int what) {
-        if (sHandler != null) {
-            sHandler.sendEmptyMessage(what);
-        }
-    }
-
-    private static class MyHandler extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case START_AUDIO:
-                    MediaRecordService.getInstance().startRecordAudio();
-                    break;
-                case STOP_AUDIO:
-                    MediaRecordService.getInstance().stopRecordAudio();
-                    break;
-                case START_VIDEO:
-                    MediaRecordService.getInstance().startRecordVideo(null);
-                    break;
-                case STOP_VIDEO:
-                    MediaRecordService.getInstance().stopRecordVideo();
-                    break;
-            }
         }
     }
 
