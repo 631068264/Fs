@@ -30,36 +30,17 @@ public class OkHttpUtils {
         GET, POST, PUT, DELETE, HEAD, PATCH,
     }
 
-    public static void getAsync(String url, HttpParams params, BaseCallback callback) {
-        url = OkHttpConfig.getInstance().getBaseUrl() + url;
-        request(Method.GET, url, params, false, callback);
-    }
-
     public static void get(String url, HttpParams params, BaseCallback callback) {
         url = OkHttpConfig.getInstance().getBaseUrl() + url;
-        request(Method.GET, url, params, true, callback);
-    }
-
-
-    public static void get(String url, HttpParams params) {
-        get(url, params, null);
+        request(Method.GET, url, params, callback);
     }
 
     public static void post(String url, HttpParams params, BaseCallback callback) {
         url = OkHttpConfig.getInstance().getBaseUrl() + url;
-        request(Method.POST, url, params, true, callback);
+        request(Method.POST, url, params, callback);
     }
 
-    public static void postAsync(String url, HttpParams params, BaseCallback callback) {
-        url = OkHttpConfig.getInstance().getBaseUrl() + url;
-        request(Method.POST, url, params, false, callback);
-    }
-
-    public static void post(String url, HttpParams params) {
-        post(url, params, null);
-    }
-
-    private static void request(Method method, String url, HttpParams params, boolean isBlock, final BaseCallback callback) {
+    private static void request(Method method, String url, HttpParams params, final BaseCallback callback) {
         if (!NetworkUtils.isNetworkAvailable(App.getInstance())) {
             callback.onError("NetWork Failed");
             LogUtils.d("NetWork Failed");
@@ -85,33 +66,19 @@ public class OkHttpUtils {
         CallManager.getInstance().addCall(srcUrl, call);
         LogUtils.d("Call: %s", url);
         try {
-            if (isBlock) {
-                try {
-                    Response response = call.execute();
-                    if (response.isSuccessful() && callback != null) {
-                        parseResponse(callback, response);
-                    }
-                } catch (IOException e) {
-                    if (callback != null) {
-                        LogUtils.e(Log.getStackTraceString(e));
-                        callback.onError(Log.getStackTraceString(e));
-                    }
-                    e.printStackTrace();
+            //synchronous method can't work in the main thread
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    LogUtils.e(Log.getStackTraceString(e));
+                    callback.onError(Log.getStackTraceString(e));
                 }
-            } else {
-                call.enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        LogUtils.e(Log.getStackTraceString(e));
-                        callback.onError(Log.getStackTraceString(e));
-                    }
 
-                    @Override
-                    public void onResponse(Call call, Response response) {
-                        parseResponse(callback, response);
-                    }
-                });
-            }
+                @Override
+                public void onResponse(Call call, Response response) {
+                    parseResponse(callback, response);
+                }
+            });
         } catch (Exception e) {
             LogUtils.e(Log.getStackTraceString(e));
         }

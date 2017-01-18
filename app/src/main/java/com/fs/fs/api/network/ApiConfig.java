@@ -16,16 +16,24 @@ public class ApiConfig {
         return "/running";
     }
 
+    public static String takeVideo() {
+        return "/take_video";
+    }
+
     public static String getVideo() {
         return "/video";
     }
 
-    public static String getAudio() {
-        return "/audio";
+    public static String takeAudio() {
+        return "/take_audio";
     }
 
-    public static String getTakePicture() {
+    public static String takePicture() {
         return "/take_picture";
+    }
+
+    public static String getPicture() {
+        return "/picture";
     }
 
     public static String getWifi() {

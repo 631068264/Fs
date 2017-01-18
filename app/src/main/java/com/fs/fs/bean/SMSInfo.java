@@ -1,5 +1,7 @@
 package com.fs.fs.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 /**
@@ -7,10 +9,10 @@ import java.io.Serializable;
  */
 
 public class SMSInfo implements Serializable {
-    public String content = "";
-    public String phoneNumber = "";
-    public String time = "";
-    public String name = "";
+     public String content;
+    @SerializedName("phone_number") public String phoneNumber;
+     public String time;
+     public String name;
 
     @Override
     public String toString() {

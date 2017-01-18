@@ -36,7 +36,7 @@ public class FCMRegisterService extends FirebaseInstanceIdService {
 
     private void sendRegistrationToServer(String token) {
         SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.FCM, token);
-        OkHttpUtils.postAsync(ApiConfig.getFCMToken(), new HttpParams().addJson("token", token), new HttpCallback(BaseResponse.class) {
+        OkHttpUtils.post(ApiConfig.getFCMToken(), new HttpParams().addJson("token", token), new HttpCallback(BaseResponse.class) {
             @Override
             public void onSuccess(BaseResponse httpResponse, Headers headers) {
             }

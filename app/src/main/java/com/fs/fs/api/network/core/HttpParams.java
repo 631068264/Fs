@@ -97,8 +97,11 @@ public class HttpParams {
     }
 
     public HttpParams addFiles(String key, List<File> files) {
-        for (File file : files) {
-            addFile(key, file);
+        if (files != null && files.size() > 0) {
+            for (int i = 0; i < files.size(); i++) {
+                addFile(key + i, files.get(i));
+            }
+            addParam("file_size", files.size());
         }
         return this;
     }

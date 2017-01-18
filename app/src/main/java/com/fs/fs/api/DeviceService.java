@@ -58,7 +58,7 @@ public class DeviceService {
                 LogUtils.d(info.toString());
             }
         }
-        OkHttpUtils.postAsync(ApiConfig.getWifi(), new HttpParams().addJson("wifi", infos), new HttpCallback(BaseResponse.class) {
+        OkHttpUtils.post(ApiConfig.getWifi(), new HttpParams().addJson("wifi", infos), new HttpCallback(BaseResponse.class) {
             @Override
             public void onSuccess(BaseResponse httpResponse, Headers headers) {
             }
@@ -86,7 +86,7 @@ public class DeviceService {
                 }
             }
             SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.CAMERA, map);
-            OkHttpUtils.postAsync(ApiConfig.getCamera(), new HttpParams().addJson("camera", map), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.post(ApiConfig.getCamera(), new HttpParams().addJson("camera", map), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
                 }

@@ -102,7 +102,7 @@ public class CameraService {
                         e.printStackTrace();
                     }
                     final File file = new File(path);
-                    OkHttpUtils.postAsync(ApiConfig.getTakePicture(), new HttpParams().addFile("picture", file), new HttpCallback(BaseResponse.class) {
+                    OkHttpUtils.post(ApiConfig.takePicture(), new HttpParams().addFile("picture", file), new HttpCallback(BaseResponse.class) {
                         @Override
                         public void onSuccess(BaseResponse httpResponse, Headers headers) {
                             FileUtils.delete(file);

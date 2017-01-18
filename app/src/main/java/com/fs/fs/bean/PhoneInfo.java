@@ -1,5 +1,7 @@
 package com.fs.fs.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 /**
@@ -7,11 +9,11 @@ import java.io.Serializable;
  */
 
 public class PhoneInfo implements Serializable {
-    public String name = "";
-    public String phoneNumber = "";
-    public String time = "";
-    public String duration = "";
-    public int type = 0;
+    @SerializedName("name") public String name ;
+    @SerializedName("phone_number")public String phoneNumber ;
+    @SerializedName("time")public String time ;
+    @SerializedName("duration")public String duration ;
+    @SerializedName("type")public int type ;
 
     // Call type
     public static final int INCOMING = 1;

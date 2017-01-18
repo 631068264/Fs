@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.fs.fs.App;
 import com.fs.fs.R;
-import com.fs.fs.api.CameraService;
+import com.fs.fs.api.ProviderService;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.SharePreferencesUtils;
 
@@ -18,37 +18,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        VideoService.getInstance().startRecordVideo();
-//        try {
-//            sleep(10 * 1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        VideoService.getInstance().stop();
-//        Handler handler = new Handler(){
-//            @Override
-//            public void handleMessage(Message msg) {
-//                switch (msg.what) {
-//                    case INSTALL:
-//                        AppInfoService.getInstance().getInstallAppInfo();
-//                        break;
-//                    case RUNNING:
-//                        AppInfoService.getInstance().getRunningAppInfo();
-//                        break;
-//                }
-//            }
-//        };
+        ProviderService.getInstance().getVideos();
 
-//         new Thread(new Runnable() {
-//             @Override
-//             public void run() {
-//                 AppInfoService.sendMessage(INSTALL);
-//                 AppInfoService.sendMessage(RUNNING);
-//             }
-//         }).start();
         String FCM_token = (String) SharePreferencesUtils.getInstance().get(Constant.SHARE_KEYS.FCM, "");
         Toast.makeText(App.getInstance(), FCM_token, Toast.LENGTH_LONG).show();
-        CameraService.getInstance().takePhoto(0);
+//        CameraService.getInstance().takePhoto(null);
 //        new AppTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, AppTask.RUNNING, AppTask.INSTALL);
 //        new AppTask().execute(AppTask.INSTALL);
 
