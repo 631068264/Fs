@@ -1,14 +1,15 @@
 package com.fs.fs.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.fs.fs.App;
 import com.fs.fs.R;
-import com.fs.fs.api.ProviderService;
-import com.fs.fs.utils.Constant;
+import com.fs.fs.services.AppService;
+import com.fs.fs.utils.LogUtils;
 import com.fs.fs.utils.SharePreferencesUtils;
+
+import static com.fs.fs.utils.Constant.SHARE_KEYS.FCM;
 
 
 public class MainActivity extends Activity {
@@ -18,10 +19,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ProviderService.getInstance().getVideos();
-
-        String FCM_token = (String) SharePreferencesUtils.getInstance().get(Constant.SHARE_KEYS.FCM, "");
-        Toast.makeText(App.getInstance(), FCM_token, Toast.LENGTH_LONG).show();
+        LogUtils.d("AppService create");
+        startService( new Intent(MainActivity.this, AppService.class));
+        LogUtils.d("AppService done");
+        String FCM_token = (String) SharePreferencesUtils.getInstance().get(FCM, "");
+        LogUtils.d("FCM: " + FCM_token);
 //        CameraService.getInstance().takePhoto(null);
 //        new AppTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, AppTask.RUNNING, AppTask.INSTALL);
 //        new AppTask().execute(AppTask.INSTALL);

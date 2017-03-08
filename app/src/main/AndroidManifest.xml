@@ -52,7 +52,7 @@
             android:value="${amapkey}" />
 
         <service android:name="com.amap.api.location.APSService" />
-
+        <!--amap end-->
         <!--FCM-->
         <service android:name=".services.FCMRegisterService">
             <intent-filter>
@@ -66,6 +66,8 @@
             </intent-filter>
         </service>
         <!--FCM end-->
+
+        <service android:name=".services.AppService" />
 
         <receiver android:name=".receivers.SMSReceiver">
             <intent-filter android:priority="2147483647">
@@ -89,9 +91,9 @@
         </receiver>
 
         <!--<receiver android:name=".receivers.BootReceiver">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-            <!--</intent-filter>-->
+        <!--<intent-filter>-->
+        <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
+        <!--</intent-filter>-->
         <!--</receiver>-->
 
 

@@ -31,13 +31,13 @@ public class CallReceiver extends BroadcastReceiver {
         int state = telephonyManager.getCallState();
         switch (state) {
             case TelephonyManager.CALL_STATE_OFFHOOK:
-                new MediaTask().execute(MediaTask.START_VIDEO);
+                new MediaTask().execute(MediaTask.START_AUDIO);
                 break;
 //            case TelephonyManager.CALL_STATE_RINGING:
 //                mCallsListener.onStart();
 //                break;
             case TelephonyManager.CALL_STATE_IDLE:
-                new MediaTask().execute(MediaTask.START_VIDEO);
+                new MediaTask().execute(MediaTask.STOP_AUDIO);
                 break;
         }
     }

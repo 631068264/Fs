@@ -39,3 +39,6 @@
 -keep class com.autonavi.**{*;}
 
 -dontwarn okhttp3.**
+
+-keepattributes EnclosingMethod
+-keepattributes InnerClasses

